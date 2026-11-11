@@ -69,3 +69,4 @@ El simulador interactivo iniciará en: `http://localhost:5000`
    - **XSS Almacenado:** Sanitización en persistencia y presentación + bandera `HttpOnly`.
    - **XSS Basado en DOM:** Reemplazo de sumideros peligrosos (`innerHTML`) por sumideros seguros (`textContent`).
    - **Cabeceras de Defensa:** Implementación de *Content Security Policy (CSP)*.
+
