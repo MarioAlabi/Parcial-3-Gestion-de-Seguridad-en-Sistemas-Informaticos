@@ -427,9 +427,6 @@
             font-family: 'JetBrains Mono', monospace;
             font-size: 11px;
         }
-        @media (max-width: 768px) {
-            .code-compare { grid-template-columns: 1fr; }
-        }
         .code-bad {
             background: #1a080c;
             border: 1px solid var(--red);
@@ -445,6 +442,288 @@
             color: #86efac;
         }
 
+        /* ==============================================================
+           REGLAS RESPONSIVE PARA DISPOSITIVOS MÓVILES (CELULAR / TABLET)
+           Preserva el diseño y paleta originales adaptando el flujo a pantallas pequeñas.
+        ================================================================== */
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        .top-navbar .container-fluid {
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .navbar-brand-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .navbar-mode-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* Ajustes para Tablets y Pantallas Medianas (<= 991px) */
+        @media (max-width: 991.98px) {
+            .panel-card.h-100 {
+                height: auto !important;
+            }
+        }
+
+        /* Ajustes para Móviles y Pantallas Pequeñas (<= 768px) */
+        @media (max-width: 768px) {
+            body {
+                padding-bottom: 20px;
+            }
+
+            .top-navbar {
+                padding-left: 12px !important;
+                padding-right: 12px !important;
+            }
+
+            .top-navbar .container-fluid {
+                flex-direction: column;
+                align-items: stretch !important;
+                gap: 8px;
+            }
+
+            .navbar-brand-title {
+                font-size: 14.5px !important;
+            }
+
+            .navbar-brand-sub {
+                font-size: 10.5px !important;
+            }
+
+            .navbar-mode-group {
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .navbar-mode-group .badge,
+            .navbar-mode-group .btn {
+                font-size: 11px !important;
+                padding: 6px 10px !important;
+            }
+
+            /* Pestañas de vectores desplazables en móvil */
+            .vector-tabs {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                padding: 4px;
+                gap: 6px;
+                margin-bottom: 10px;
+            }
+            .vector-tabs::-webkit-scrollbar {
+                display: none;
+            }
+            .vector-tab-btn {
+                flex: 0 0 auto;
+                white-space: nowrap;
+                font-size: 12px;
+                padding: 7px 12px;
+            }
+
+            .code-compare {
+                grid-template-columns: 1fr;
+            }
+
+            .code-bad, .code-good {
+                font-size: 10.5px;
+                word-break: break-word;
+                overflow-x: auto;
+            }
+        }
+
+        /* Ajustes Específicos para Celular (<= 576px) */
+        @media (max-width: 576px) {
+            .container-fluid.px-3 {
+                padding-left: 10px !important;
+                padding-right: 10px !important;
+            }
+
+            .panel-card {
+                padding: 12px;
+                border-radius: 10px;
+            }
+
+            .crafting-box {
+                padding: 10px;
+            }
+
+            /* Botones de acción del atacante apilados */
+            .action-btns-row {
+                flex-direction: column !important;
+                gap: 8px !important;
+            }
+            .action-btns-row .btn {
+                width: 100% !important;
+                padding: 9px 12px !important;
+                font-size: 12.5px !important;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* Barra del navegador simulado adaptada para celular */
+            .browser-bar {
+                flex-wrap: wrap;
+                gap: 6px;
+                padding: 7px 10px;
+            }
+            .browser-dots {
+                order: 1;
+            }
+            .browser-session-tag {
+                order: 2;
+                margin-left: auto;
+                font-size: 10px;
+                padding: 2px 7px;
+            }
+            .browser-url-bar {
+                order: 3;
+                width: 100%;
+                flex: 1 1 100%;
+                font-size: 10.5px;
+                padding: 4px 8px;
+            }
+
+            .browser-content {
+                padding: 12px;
+                min-height: 180px;
+            }
+
+            /* Pipeline Debugger con desplazamiento táctil horizontal */
+            .pipeline-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: thin;
+                scrollbar-color: var(--line) transparent;
+                padding-bottom: 6px;
+                gap: 4px;
+                justify-content: flex-start;
+            }
+            .pipeline-container::-webkit-scrollbar {
+                height: 4px;
+            }
+            .pipeline-container::-webkit-scrollbar-thumb {
+                background: var(--line);
+                border-radius: 4px;
+            }
+            .pipeline-step {
+                flex: 0 0 92px;
+                min-width: 92px;
+                padding: 6px 3px;
+                font-size: 10px;
+            }
+            .pipeline-step .fw-bold {
+                font-size: 10.5px;
+            }
+            .pipeline-arrow {
+                flex: 0 0 auto;
+                font-size: 12px;
+            }
+
+            /* Encabezado y controles del debugger */
+            .debugger-header {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .debugger-controls {
+                width: 100%;
+                display: flex;
+                justify-content: flex-end;
+                gap: 6px;
+            }
+            .debugger-controls .btn {
+                padding: 4px 9px !important;
+                font-size: 11px;
+            }
+
+            /* Visor de variables del Scope Watcher */
+            .debug-scope-panel {
+                padding: 8px 10px;
+                font-size: 11px;
+            }
+            .debug-var-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1px;
+                padding: 5px 0;
+            }
+            .debug-var-name {
+                font-size: 10.5px;
+            }
+            .debug-var-val {
+                max-width: 100%;
+                text-align: left;
+                white-space: normal;
+                word-break: break-word;
+                font-size: 11px;
+            }
+
+            /* Consola C2 en celular */
+            .c2-header {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .c2-controls {
+                width: 100%;
+                display: flex;
+                justify-content: flex-end;
+                gap: 6px;
+            }
+            .hacker-terminal {
+                height: 140px;
+                font-size: 10.5px;
+                word-break: break-all;
+            }
+            .hacker-terminal code {
+                word-break: break-all;
+            }
+
+            /* Modal simulado de alerta */
+            .simulated-alert-box {
+                width: 92%;
+                max-width: 340px;
+                padding: 14px 16px;
+            }
+
+            /* Chips rápidos */
+            .chip {
+                font-size: 10px;
+                padding: 3px 8px;
+            }
+        }
+
+        /* Pantallas muy pequeñas (<= 400px) */
+        @media (max-width: 400px) {
+            .navbar-mode-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .navbar-mode-group .badge,
+            .navbar-mode-group .btn {
+                width: 100%;
+                text-align: center;
+                justify-content: center;
+            }
+            .vector-tab-btn {
+                font-size: 11px;
+                padding: 6px 9px;
+            }
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
@@ -458,19 +737,19 @@
     <!-- NAVBAR SUPERIOR -->
     <nav class="top-navbar py-2 px-3">
         <div class="container-fluid d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-2">
-                <i class="bi bi-shield-lock-fill text-info fs-4"></i>
+            <div class="navbar-brand-group">
+                <i class="bi bi-shield-lock-fill text-info fs-4 flex-shrink-0"></i>
                 <div>
-                    <span class="fw-bold" style="font-family:'Space Grotesk'; font-size:16px; color:#fff;">
+                    <span class="fw-bold navbar-brand-title" style="font-family:'Space Grotesk'; font-size:16px; color:#fff;">
                         UNICAES | Security Workbench <span style="color:var(--turq)">XSS (CWE-79)</span>
                     </span>
-                    <span class="d-block text-secondary" style="font-size:11px;">
+                    <span class="d-block text-secondary navbar-brand-sub" style="font-size:11px;">
                         Taller Práctico: Dennis Guevara · Mario Villeda · Luis Balcaceres
                     </span>
                 </div>
             </div>
 
-            <div class="d-flex align-items-center gap-2">
+            <div class="navbar-mode-group">
                 {% if configuracion.modo_seguro %}
                 <span class="badge py-2 px-3 fw-bold" style="background:var(--green); color:#04271A; font-size:12px;">
                     <i class="bi bi-shield-check"></i> MODO SEGURO (Defensas Activas)
@@ -555,7 +834,7 @@
                         </div>
 
                         <!-- Botones de Acción (Envío / Clic de la Víctima) -->
-                        <div class="d-flex gap-2 mt-2">
+                        <div class="d-flex gap-2 mt-2 action-btns-row">
                             <button class="btn btn-sm btn-turq flex-grow-1" onclick="ejecutarAtaque(false)">
                                 <i class="bi bi-cursor-fill"></i> <span id="btn-victim-action">Víctima abre el enlace (Normal)</span>
                             </button>
@@ -625,14 +904,14 @@
 
                     <!-- PANEL DEL PIPELINE DEBUGGER EN VIVO -->
                     <div class="panel-card" style="border-top: 4px solid var(--amber);">
-                        <div class="d-flex justify-content-between align-items-center pb-2 border-bottom border-secondary mb-2">
+                        <div class="d-flex justify-content-between align-items-center pb-2 border-bottom border-secondary mb-2 debugger-header">
                             <div class="d-flex align-items-center gap-2">
                                 <h6 class="mb-0 fw-bold" style="color:var(--amber);">
                                     <i class="bi bi-cpu-fill"></i> Pipeline Debugger en Vivo
                                 </h6>
                                 <span class="badge bg-dark border border-secondary" id="debug-step-badge">Paso 0 / 4</span>
                             </div>
-                            <div class="d-flex gap-1">
+                            <div class="d-flex gap-1 debugger-controls">
                                 <button class="btn btn-sm btn-amber text-dark fw-bold py-0 px-2" id="btn-next-step" onclick="avanzarStepDebugger()" disabled>
                                     <i class="bi bi-skip-forward-fill"></i> Paso ❯ (F10)
                                 </button>
@@ -706,14 +985,14 @@
 
                     <!-- PANEL DE LA CONSOLA C2 ATACANTE (EXFILTRACIÓN Y SESSION HIJACKING) -->
                     <div class="panel-card flex-grow-1 d-flex flex-column" style="border-top: 4px solid var(--red);">
-                        <div class="d-flex justify-content-between align-items-center pb-2 border-bottom border-secondary mb-2">
+                        <div class="d-flex justify-content-between align-items-center pb-2 border-bottom border-secondary mb-2 c2-header">
                             <div class="d-flex align-items-center gap-2">
                                 <h6 class="mb-0 fw-bold" style="color:var(--red);">
                                     <i class="bi bi-terminal-fill"></i> Servidor Atacante C2 (<span class="mono">malo.com/c2</span>)
                                 </h6>
                                 <span class="badge bg-danger blink" style="font-size:9.5px;">LISTENER ONLINE</span>
                             </div>
-                            <div class="d-flex gap-1">
+                            <div class="d-flex gap-1 c2-controls">
                                 <button class="btn btn-sm btn-outline-danger py-0 px-2 fw-bold" id="btn-hijack-session" onclick="toggleSecuestroSesion()" style="display:none; font-size:11px;">
                                     <i class="bi bi-incognito"></i> 💥 Secuestrar Sesión
                                 </button>

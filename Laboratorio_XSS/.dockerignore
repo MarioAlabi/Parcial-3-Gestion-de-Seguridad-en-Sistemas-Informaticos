@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+*$py.class
+app_backup_original.py
+.git/
+.gitignore
+.dockerignore
+iniciar_laboratorio.sh
+README.md
+compose.yaml
+docker-compose.yml
+Presentacion_XSS_UNICAES.*
+imagenes/
+
