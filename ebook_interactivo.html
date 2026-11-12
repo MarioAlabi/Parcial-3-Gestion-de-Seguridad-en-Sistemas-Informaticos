@@ -983,16 +983,78 @@ const store = {
   set(k, v){ try { localStorage.setItem('xssa-' + k, JSON.stringify(v)); } catch {} },
 };
 
-/* ---------- navegación ---------- */
+/* ---------- navegación con sidebar scrollspy de alta precisión ---------- */
 const sections = $$('section');
-const navLinks = $$('nav .links a');
-addEventListener('scroll', () => {
+const navLinks = $$('#tocNav .toc-link');
+
+function updateScrollspy() {
   const h = document.documentElement;
-  $('#progress').style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + '%';
+  const pbar = $('#progress');
+  if (pbar) pbar.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + '%';
+
+  const scrollPos = window.scrollY + 160;
   let cur = '';
-  sections.forEach(s => { if (s.getBoundingClientRect().top < 140) cur = s.id; });
-  navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + cur));
-}, { passive:true });
+
+  // Si el usuario está casi al final de la página (Sala de Evidencias)
+  if ((window.innerHeight + window.scrollY) >= (document.documentElement.scrollHeight - 70)) {
+    if (sections.length > 0) cur = sections[sections.length - 1].id;
+  } else {
+    for (let i = 0; i < sections.length; i++) {
+      const s = sections[i];
+      const top = s.offsetTop;
+      const height = s.offsetHeight;
+      if (scrollPos >= top && scrollPos < top + height) {
+        cur = s.id;
+        break;
+      }
+    }
+  }
+
+  // Fallback al elemento más cercano superior si hay desfase
+  if (!cur && sections.length > 0) {
+    for (let i = sections.length - 1; i >= 0; i--) {
+      if (scrollPos >= sections[i].offsetTop) {
+        cur = sections[i].id;
+        break;
+      }
+    }
+    if (!cur) cur = sections[0].id;
+  }
+
+  navLinks.forEach(a => {
+    const isTarget = a.getAttribute('href') === '#' + cur;
+    a.classList.toggle('active', isTarget);
+  });
+}
+
+addEventListener('scroll', updateScrollspy, { passive: true });
+addEventListener('resize', updateScrollspy, { passive: true });
+updateScrollspy();
+
+// Actualizar resaltado inmediato al hacer clic en un enlace del sidebar
+navLinks.forEach(a => {
+  a.addEventListener('click', () => {
+    navLinks.forEach(link => link.classList.remove('active'));
+    a.classList.add('active');
+  });
+});
+
+// Menú desplegable para dispositivos móviles
+const mobBtn = $('#mobileMenuBtn');
+const sideCol = $('#sidebarCol');
+const backdrop = $('#sidebarBackdrop');
+
+if (mobBtn && sideCol && backdrop) {
+  function toggleMobileSidebar(open) {
+    sideCol.classList.toggle('open', open);
+    backdrop.classList.toggle('open', open);
+  }
+  mobBtn.onclick = () => toggleMobileSidebar(!sideCol.classList.contains('open'));
+  backdrop.onclick = () => toggleMobileSidebar(false);
+  navLinks.forEach(a => a.addEventListener('click', () => {
+    if (window.innerWidth < 1024) toggleMobileSidebar(false);
+  }));
+}
 const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold:.12 });
 $$('.reveal').forEach(el => io.observe(el));
 
@@ -1039,6 +1101,8 @@ function renderTracker(){
   $('#fabCount').textContent = found.size;
   $$('.pista').forEach(p => p.classList.toggle('found', found.has(p.dataset.ev)));
   $('#evSummary').textContent = found.size + ' de 5 reunidas';
+  const sbCount = $('#sidebarEvCount');
+  if (sbCount) sbCount.textContent = found.size + '/5';
 }
 function checkPistas(){
   $$('.pista').forEach(p => {
