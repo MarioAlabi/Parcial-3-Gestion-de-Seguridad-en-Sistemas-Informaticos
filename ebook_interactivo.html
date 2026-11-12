@@ -30,13 +30,254 @@
   .ic{ width:22px; height:22px; flex:none; color:var(--turq); }
   .ic.lg{ width:34px; height:34px; }
 
-  nav{ position:sticky; top:0; z-index:50; background:rgba(11,27,51,.9); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); }
-  nav .wrap{ display:flex; align-items:center; gap:14px; height:56px; overflow-x:auto; scrollbar-width:none; }
-  nav .brand{ font-family:"Space Grotesk"; font-weight:700; color:#fff; white-space:nowrap; text-decoration:none; }
-  nav .brand span{ color:var(--turq); }
-  nav .links{ display:flex; gap:4px; margin-left:auto; }
-  nav .links a{ color:var(--muted); text-decoration:none; font-size:13px; padding:6px 10px; border-radius:20px; white-space:nowrap; }
-  nav .links a.active, nav .links a:hover{ background:var(--navy3); color:#fff; }
+  
+  /* ================= LAYOUT CON SIDEBAR (ESTILO INFORME TÉCNICO) ================= */
+  .top-bar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(11, 27, 51, 0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+    height: 54px;
+  }
+  .top-bar .wrap-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  .top-bar .brand-text {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    color: #fff;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .top-bar .brand-text span { color: var(--turq); }
+  .btn-mobile-sidebar {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    background: var(--navy3);
+    border: 1px solid var(--line);
+    color: #fff;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .page-container {
+    display: flex;
+    gap: 32px;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 24px 20px;
+    align-items: flex-start;
+  }
+
+  .sidebar-col {
+    width: 285px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 76px;
+    z-index: 40;
+  }
+  .sidebar-card {
+    background: var(--navy2);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  }
+  .sidebar-top {
+    margin-bottom: 14px;
+  }
+  .sidebar-top .brand {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: 21px;
+    color: #fff;
+    text-decoration: none;
+    display: block;
+    line-height: 1.1;
+  }
+  .sidebar-top .brand span { color: var(--turq); }
+  .sidebar-sub {
+    font-size: 11.5px;
+    color: var(--muted);
+    font-family: "JetBrains Mono", monospace;
+    margin-top: 4px;
+  }
+  .btn-portal-back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(25, 211, 197, 0.12);
+    border: 1px solid var(--turq);
+    color: var(--turq);
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    margin-bottom: 18px;
+    transition: all 0.2s;
+  }
+  .btn-portal-back:hover {
+    background: var(--turq);
+    color: var(--navy);
+    transform: translateY(-1px);
+  }
+  .sidebar-kicker {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--turq);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .sidebar-nav .toc-link {
+    display: flex;
+    align-items: center;
+    color: #8FA3C2;
+    text-decoration: none;
+    padding: 7px 12px;
+    border-radius: 6px;
+    font-size: 13.5px;
+    font-family: "Inter", sans-serif;
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    border-left: 3px solid transparent;
+    position: relative;
+  }
+  .sidebar-nav .toc-link:hover {
+    color: var(--turq);
+    background: rgba(25, 211, 197, 0.08);
+  }
+  .sidebar-nav .toc-link.active {
+    color: #ffffff !important;
+    background: rgba(25, 211, 197, 0.16) !important;
+    border-left-color: var(--turq) !important;
+    font-weight: 700;
+    box-shadow: inset 0 0 12px rgba(25, 211, 197, 0.12);
+  }
+  .sidebar-nav .toc-link.active::after {
+    content: "●";
+    color: var(--turq);
+    font-size: 10px;
+    margin-left: auto;
+    text-shadow: 0 0 8px var(--turq);
+  }
+  .sidebar-divider {
+    border: 0;
+    border-top: 1px solid var(--line);
+    margin: 16px 0;
+  }
+  .sidebar-info-box {
+    background: rgba(11, 27, 51, 0.6);
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .sidebar-ev-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text);
+    margin-bottom: 8px;
+    font-family: "Space Grotesk", sans-serif;
+  }
+  .sidebar-dl-btn {
+    display: block;
+    text-align: center;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--muted);
+    text-decoration: none;
+    background: var(--navy3);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 6px 10px;
+    transition: all 0.2s;
+  }
+  .sidebar-dl-btn:hover {
+    color: #fff;
+    border-color: var(--turq);
+  }
+
+  .content-col {
+    flex: 1;
+    min-width: 0;
+  }
+  .content-col section {
+    padding: 60px 0;
+    border-bottom: 1px solid var(--line);
+    scroll-margin-top: 75px;
+  }
+  .content-col section:first-of-type {
+    padding-top: 15px;
+  }
+
+  .sidebar-backdrop {
+    display: none;
+  }
+
+  @media (max-width: 1023px) {
+    .page-container {
+      display: block;
+      padding: 12px 14px;
+    }
+    .sidebar-col {
+      display: none;
+      position: fixed;
+      top: 54px;
+      left: 0;
+      bottom: 0;
+      width: 290px;
+      z-index: 100;
+      background: rgba(11, 27, 51, 0.98);
+      backdrop-filter: blur(16px);
+      border-right: 1px solid var(--line);
+      padding: 16px;
+      overflow-y: auto;
+      box-shadow: 10px 0 30px rgba(0,0,0,0.6);
+    }
+    .sidebar-col.open {
+      display: block;
+    }
+    .sidebar-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 99;
+    }
+    .sidebar-backdrop.open {
+      display: block;
+    }
+    .btn-mobile-sidebar {
+      display: inline-flex !important;
+    }
+  }
+
   .progress{ position:absolute; left:0; bottom:-1px; height:3px; background:var(--turq); width:0; }
 
   section{ padding:90px 0; border-bottom:1px solid var(--line); scroll-margin-top:56px; }
@@ -369,16 +610,78 @@
 
 </script>
 
-<nav>
-  <div class="wrap">
-    <a class="brand" href="#inicio">XSS <span>ACADEMY</span></a>
-    <div class="links"><a href="index.html" style="background:rgba(25,211,197,0.18); border:1px solid var(--turq); color:var(--turq); font-weight:700;">🏠 Portal Central</a>
-      <a href="#caso">Caso</a><a href="#cap1">1 · Qué es</a><a href="#cap2">2 · Tipos</a><a href="#cap3">3 · Simulador</a>
-      <a href="#cap4">4 · Riesgos</a><a href="#cap5">5 · Prevención</a><a href="#mision">★ Misión</a><a href="#sala">Sala</a>
+
+<!-- BARRA SUPERIOR SLIM CON PROGRESO -->
+<header class="top-bar">
+  <div class="wrap-bar">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <button class="btn-mobile-sidebar" id="mobileMenuBtn" aria-label="Abrir Índice">
+        <svg class="ic" style="width:18px;height:18px;"><use href="#i-burger"/></svg>
+        <span>Índice</span>
+      </button>
+      <a class="brand-text" href="#inicio">
+        XSS <span>ACADEMY</span> <span style="font-size:12px;color:var(--muted);font-weight:400;font-family:'JetBrains Mono';">· El código oculto</span>
+      </a>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:10px;">
+      <a href="index.html" class="btn" style="padding:5px 12px;font-size:12.5px;font-weight:700;display:inline-flex;align-items:center;gap:6px;">
+        🏠 Portal Central
+      </a>
+      <a href="XSS_Academy_Edicion_Impresa.pdf" download class="btn ghost" style="padding:5px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:6px;">
+        📥 PDF
+      </a>
     </div>
   </div>
   <div class="progress" id="progress"></div>
-</nav>
+</header>
+
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+<div class="page-container">
+  <!-- SIDEBAR IZQUIERDO (ESTILO INFORME TÉCNICO) -->
+  <aside class="sidebar-col" id="sidebarCol">
+    <div class="sidebar-card">
+      <div class="sidebar-top">
+        <a class="brand" href="#inicio">XSS <span>ACADEMY</span></a>
+        <div class="sidebar-sub">Expediente 01 · Caso ForoClase</div>
+      </div>
+
+      <a href="index.html" class="btn-portal-back">
+        🏠 Volver al Portal Central
+      </a>
+
+      <div class="sidebar-kicker">ÍNDICE DE EXPEDIENTE</div>
+
+      <nav id="tocNav" class="sidebar-nav">
+        <a href="#inicio" class="toc-link active">0 · Portada &amp; Inicio</a>
+        <a href="#caso" class="toc-link">1 · El Ataque a ForoClase</a>
+        <a href="#cap1" class="toc-link">2 · ¿Qué es XSS?</a>
+        <a href="#cap2" class="toc-link">3 · Tipos de XSS</a>
+        <a href="#cap3" class="toc-link">4 · Simulador Interactivo</a>
+        <a href="#cap4" class="toc-link">5 · Riesgos &amp; Historia</a>
+        <a href="#cap5" class="toc-link">6 · Prevención de Código</a>
+        <a href="#mision" class="toc-link">★ · Misión Pericial</a>
+        <a href="#sala" class="toc-link">📁 · Sala de Evidencias</a>
+      </nav>
+
+      <hr class="sidebar-divider">
+
+      <div class="sidebar-info-box">
+        <div class="sidebar-ev-row">
+          <span>📁 Evidencias reunidas:</span>
+          <b id="sidebarEvCount" style="color:var(--turq)">0/5</b>
+        </div>
+        <a href="XSS_Academy_Edicion_Impresa.pdf" download class="sidebar-dl-btn">
+          📥 Descargar Revista (20 págs)
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL A LA DERECHA -->
+  <div class="content-col">
+
 
 <button class="fab" id="fab" title="Ver expediente"><svg class="ic"><use href="#i-folder"/></svg><span>Evidencias <span id="fabCount">0</span>/5</span></button>
 
