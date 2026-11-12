@@ -26,6 +26,54 @@
             --bg-dark: #07101E;
         }
         * { box-sizing: border-box; }
+        section {
+            scroll-margin-top: 85px;
+        }
+        .text-muted {
+            color: #A0B2CD !important;
+        }
+        .small, small {
+            color: #CBD5E1;
+        }
+        .report-card p {
+            color: #E2E8F0;
+        }
+        .report-card p strong {
+            color: #ffffff;
+        }
+        .report-card pre code {
+            color: #A3E635;
+        }
+        .toc-link {
+            display: flex;
+            align-items: center;
+            color: #8FA3C2;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.88rem;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            border-left: 3px solid transparent;
+            position: relative;
+        }
+        .toc-link:hover {
+            color: var(--turq);
+            background: rgba(25, 211, 197, 0.08);
+        }
+        .toc-link.active {
+            color: #ffffff !important;
+            background: rgba(25, 211, 197, 0.16) !important;
+            border-left-color: var(--turq) !important;
+            font-weight: 700;
+            box-shadow: inset 0 0 12px rgba(25, 211, 197, 0.12);
+        }
+        .toc-link.active::after {
+            content: "●";
+            color: var(--turq);
+            font-size: 10px;
+            margin-left: auto;
+            text-shadow: 0 0 8px var(--turq);
+        }
         body {
             background-color: var(--navy);
             color: var(--text);
@@ -117,21 +165,8 @@
             border-radius: 6px;
             font-size: 0.8rem;
         }
-        .toc-link {
-            display: block;
-            color: var(--muted);
-            text-decoration: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-            border-left: 2px solid transparent;
-        }
-        .toc-link:hover, .toc-link.active {
-            color: var(--turq);
-            background: rgba(25, 211, 197, 0.08);
-            border-left-color: var(--turq);
-        }
+        
+        
         .btn-action {
             display: inline-flex;
             align-items: center;
@@ -208,7 +243,7 @@
                 <div class="position-sticky" style="top: 90px;">
                     <div class="report-card p-3 mb-3">
                         <div class="text-uppercase kicker mb-2 text-info fw-bold" style="font-size:0.75rem; letter-spacing: 1px;">Índice General</div>
-                        <nav class="d-flex flex-column gap-1">
+                        <nav id="tocNav" class="d-flex flex-column gap-1">
                             <a href="#portada" class="toc-link">1. Portada Institucional</a>
                             <a href="#intro" class="toc-link">2. Introducción & Justificación</a>
                             <a href="#objetivos" class="toc-link">3. Objetivos del Trabajo</a>
@@ -369,7 +404,7 @@
                             <div class="h-100 p-3 rounded" style="background: rgba(11, 27, 51, 0.6); border: 1px solid var(--line);">
                                 <h4 class="h5 text-info"><i class="bi bi-arrow-repeat"></i> 4.1 XSS Reflejado (Tipo I)</h4>
                                 <span class="badge bg-secondary mb-2">No Persistente</span>
-                                <p class="small text-muted mb-0">
+                                <p class="small mb-0" style="color:#CBD5E1;">
                                     Ocurre cuando la aplicación web recibe datos en la petición HTTP (parámetros GET/POST o cabeceras) y los incluye inmediatamente en el HTML sin sanitización. Requiere que la víctima pulse un enlace fraudulento.
                                 </p>
                             </div>
@@ -378,7 +413,7 @@
                             <div class="h-100 p-3 rounded" style="background: rgba(11, 27, 51, 0.6); border: 1px solid var(--line);">
                                 <h4 class="h5 text-danger"><i class="bi bi-database-fill-down"></i> 4.2 XSS Almacenado (Tipo II)</h4>
                                 <span class="badge bg-danger mb-2">Persistente (Crítico)</span>
-                                <p class="small text-muted mb-0">
+                                <p class="small mb-0" style="color:#CBD5E1;">
                                     El script malicioso se aloja de forma permanente en la base de datos o almacenamiento del servidor. Se ejecuta automáticamente en cada usuario que visite la sección infectada sin requerir enlaces externos.
                                 </p>
                             </div>
@@ -387,7 +422,7 @@
                             <div class="h-100 p-3 rounded" style="background: rgba(11, 27, 51, 0.6); border: 1px solid var(--line);">
                                 <h4 class="h5 text-warning"><i class="bi bi-diagram-3-fill"></i> 4.3 XSS en DOM (Tipo 0)</h4>
                                 <span class="badge bg-warning text-dark mb-2">Client-Side XSS</span>
-                                <p class="small text-muted mb-0">
+                                <p class="small mb-0" style="color:#CBD5E1;">
                                     La vulnerabilidad reside en el código JavaScript del navegador, al tomar datos de una fuente manipulable (<code>location.hash</code>) y transferirlos directamente a un sumidero peligroso como <code>innerHTML</code>.
                                 </p>
                             </div>
@@ -416,22 +451,22 @@ Host: portal-academico.edu.sv
                         <h5 class="text-white mb-2"><i class="bi bi-check2-circle text-info"></i> 5.1 Escenario 1: Demostración de Inyección Reflejada</h5>
                         <p class="small mb-2">Se comprobó que la entrada directa del usuario en el parámetro GET <code>q</code> era renderizada sin escapar mediante un vector de imagen:</p>
                         <pre class="mb-2"><code>&lt;img src=x onerror="alert('PoC_UNICAES: Ejecución de script vía evento onerror')"&gt;</code></pre>
-                        <p class="small text-muted mb-0"><strong>Mitigación:</strong> Con Modo Seguro activo, el servidor procesó el parámetro con <code>html.escape(consulta)</code>, neutralizando la ejecución al transformar delimitadores en entidades HTML literales.</p>
+                        <p class="small mb-0" style="color:#DDE7F5;"><strong style="color:var(--turq);"><i class="bi bi-shield-check"></i> Mitigación:</strong> Con Modo Seguro activo, el servidor procesó el parámetro con <code>html.escape(consulta)</code>, neutralizando la ejecución al transformar delimitadores en entidades HTML literales.</p>
                     </div>
 
                     <div class="p-3 mb-3 rounded" style="background: rgba(11, 27, 51, 0.5); border-left: 3px solid var(--red);">
                         <h5 class="text-white mb-2"><i class="bi bi-check2-circle text-danger"></i> 5.2 Escenario 2: Demostración de Persistencia en Comentarios</h5>
-                        <p class="small text-muted mb-0">Al persistir un comentario malicioso en memoria, este quedó disponible para cualquier sesión subsecuente, demostrando la capacidad de un atacante para infectar pasivamente a múltiples visitantes sin interacción directa.</p>
+                        <p class="small mb-0" style="color:#DDE7F5;"><strong style="color:var(--red);"><i class="bi bi-exclamation-triangle-fill"></i> Impacto:</strong> Al persistir un comentario malicioso en memoria, este quedó disponible para cualquier sesión subsecuente, demostrando la capacidad de un atacante para infectar pasivamente a múltiples visitantes sin interacción directa.</p>
                     </div>
 
                     <div class="p-3 mb-3 rounded" style="background: rgba(11, 27, 51, 0.5); border-left: 3px solid var(--amber);">
                         <h5 class="text-white mb-2"><i class="bi bi-check2-circle text-warning"></i> 5.3 Escenario 3: Manipulación de Flujo en el DOM</h5>
-                        <p class="small text-muted mb-0">Se contrastó la ejecución vulnerable provocada por <code>contenedor.innerHTML = hash</code> frente a la implementación segura con <code>contenedor.textContent = hash</code>, confirmando que esta última trata cualquier delimitador como texto puro.</p>
+                        <p class="small mb-0" style="color:#DDE7F5;"><strong style="color:var(--amber);"><i class="bi bi-shield-lock"></i> Análisis:</strong> Se contrastó la ejecución vulnerable provocada por <code>contenedor.innerHTML = hash</code> frente a la implementación segura con <code>contenedor.textContent = hash</code>, confirmando que esta última trata cualquier delimitador como texto puro.</p>
                     </div>
 
                     <div class="p-3 rounded" style="background: rgba(11, 27, 51, 0.5); border-left: 3px solid var(--green);">
                         <h5 class="text-white mb-2"><i class="bi bi-check2-circle text-success"></i> 5.4 Escenario 4: Auditoría de Cookies y Mitigación HttpOnly</h5>
-                        <p class="small text-muted mb-0">Para evidenciar el riesgo de <em>Session Hijacking</em>, se configuró una cookie de prueba <code>session_auth_token</code>. En modo vulnerable, <code>document.cookie</code> expuso el token íntegro. Al marcar la bandera <code>httponly=True</code> en <code>Set-Cookie</code>, la API retornó una cadena vacía, protegiendo el secreto conforme a RFC 6265.</p>
+                        <p class="small mb-0" style="color:#DDE7F5;"><strong style="color:var(--green);"><i class="bi bi-key-fill"></i> Auditoría:</strong> Para evidenciar el riesgo de <em>Session Hijacking</em>, se configuró una cookie de prueba <code>session_auth_token</code>. En modo vulnerable, <code>document.cookie</code> expuso el token íntegro. Al marcar la bandera <code>httponly=True</code> en <code>Set-Cookie</code>, la API retornó una cadena vacía, protegiendo el secreto conforme a RFC 6265.</p>
                     </div>
                 </section>
 
@@ -553,5 +588,54 @@ Host: portal-academico.edu.sv
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Scrollspy Automático de Alta Precisión -->
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const sections = Array.from(document.querySelectorAll("section[id]"));
+        const navLinks = Array.from(document.querySelectorAll("#tocNav .toc-link"));
+
+        function updateScrollspy() {
+            const scrollPos = window.scrollY + 130; // Compensación de navbar fija
+            let currentId = "";
+
+            // Si está muy cerca del final de la página, activa la última sección
+            if ((window.innerHeight + window.scrollY) >= (document.documentElement.scrollHeight - 60)) {
+                if (sections.length > 0) {
+                    currentId = sections[sections.length - 1].getAttribute("id");
+                }
+            } else {
+                for (let i = 0; i < sections.length; i++) {
+                    const sec = sections[i];
+                    const top = sec.offsetTop;
+                    const height = sec.offsetHeight;
+                    if (scrollPos >= top && scrollPos < top + height) {
+                        currentId = sec.getAttribute("id");
+                        break;
+                    }
+                }
+            }
+
+            if (!currentId && sections.length > 0) {
+                currentId = sections[0].getAttribute("id");
+            }
+
+            navLinks.forEach(link => {
+                const href = link.getAttribute("href");
+                if (href === "#" + currentId) {
+                    link.classList.add("active");
+                } else {
+                    link.classList.remove("active");
+                }
+            });
+        }
+
+        window.addEventListener("scroll", updateScrollspy, { passive: true });
+        window.addEventListener("resize", updateScrollspy, { passive: true });
+        // Ejecutar inmediatamente
+        updateScrollspy();
+    });
+    </script>
 </body>
+
 </html>

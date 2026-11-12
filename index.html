@@ -431,8 +431,8 @@
                         <a class="nav-link text-light px-3" href="#guia">Guía de Componentes</a>
                     </li>
                     <li class="nav-item ms-lg-2">
-                        <a class="btn btn-sm btn-outline-info fw-bold d-inline-flex align-items-center gap-2" href="http://localhost:5000" target="_blank">
-                            <i class="bi bi-play-circle-fill"></i> Simulador (Port 5000)
+                        <a class="btn btn-sm btn-outline-info fw-bold d-inline-flex align-items-center gap-2" href="/simulador">
+                            <i class="bi bi-play-circle-fill"></i> Simulador XSS
                         </a>
                     </li>
                 </ul>
@@ -521,8 +521,8 @@
                         Banco de pruebas interactivo en tiempo real con simulación de los 3 vectores de ataque (Reflejado, Almacenado y DOM), servidor de Comando y Control (C2) que roba cookies, Pipeline Debugger con ejecución paso a paso (tecla F10) y switch en caliente de mitigación (CSP Nivel 3, HttpOnly y Escapado Contextual).
                     </p>
                     <div class="d-flex flex-column gap-2 mt-auto">
-                        <a href="http://localhost:5000" target="_blank" class="btn-module btn-module-primary">
-                            <i class="bi bi-box-arrow-up-right"></i> Lanzar Simulador (http://localhost:5000)
+                        <a href="/simulador" class="btn-module btn-module-primary">
+                            <i class="bi bi-play-circle-fill"></i> Lanzar Simulador Interactivo
                         </a>
                         <button type="button" class="btn-module btn-module-secondary" data-bs-toggle="modal" data-bs-target="#modalInstrucciones">
                             <i class="bi bi-question-circle"></i> ¿Cómo iniciar el servidor local?
@@ -802,14 +802,14 @@ python3 app.py</code></pre>
 docker compose up -d</code></pre>
 
                     <div class="alert alert-info py-2 px-3 small mb-0" style="background: rgba(25, 211, 197, 0.1); border-color: var(--turq); color: #DDE7F5;">
-                        <i class="bi bi-info-circle-fill text-info me-1"></i> Una vez iniciado, abre tu navegador en: 
-                        <a href="http://localhost:5000" target="_blank" class="fw-bold text-info">http://localhost:5000</a>
+                        <i class="bi bi-info-circle-fill text-info me-1"></i> Una vez iniciado o desplegado, accede en tu navegador a la ruta: 
+                        <a href="/simulador" class="fw-bold text-info">/simulador</a>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
-                    <a href="http://localhost:5000" target="_blank" class="btn btn-primary btn-sm fw-bold" style="background:var(--turq); color:var(--navy); border:none;">
-                        Ir al Simulador en Port 5000 &rarr;
+                    <a href="/simulador" class="btn btn-primary btn-sm fw-bold" style="background:var(--turq); color:var(--navy); border:none;">
+                        Ir al Simulador &rarr;
                     </a>
                 </div>
             </div>
@@ -840,5 +840,16 @@ docker compose up -d</code></pre>
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Compatibilidad en modo offline/archivo local -->
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        if (window.location.protocol === "file:") {
+            document.querySelectorAll('a[href="/simulador"]').forEach(function(el) {
+                el.setAttribute("href", "Laboratorio_XSS/templates/index.html");
+                el.setAttribute("title", "Modo estático local. Inicia el servidor Flask o despliega en hosting para interactividad en vivo.");
+            });
+        }
+    });
+    </script>
 </body>
 </html>

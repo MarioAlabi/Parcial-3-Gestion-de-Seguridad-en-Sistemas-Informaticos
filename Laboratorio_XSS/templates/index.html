@@ -1934,5 +1934,13 @@
         cambiarVector(tabInicial);
         setInterval(actualizarConsolaC2, 2500);
     </script>
+
+    <script>
+    if (window.location.protocol === 'file:') {
+        document.querySelectorAll('a[href="/portal"]').forEach(el => el.setAttribute('href', '../../index.html'));
+        document.querySelectorAll('a[href="/toggle-modo"]').forEach(el => el.setAttribute('href', '#'));
+    }
+    </script>
+
 </body>
 </html>
