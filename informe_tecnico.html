@@ -208,6 +208,25 @@
             pre { background: #F8FAFC !important; border: 1px solid #CBD5E1 !important; }
             pre code { color: #0F172A !important; }
         }
+    
+        /* Optimización Responsive: Monitores Verticales y Celulares */
+        @media (max-width: 991px) {
+            body { padding-top: 65px; }
+            .report-card { padding: 20px 16px !important; margin-bottom: 20px !important; border-radius: 10px !important; }
+            .navbar-brand span { font-size: 13.5px !important; }
+            h1.display-6 { font-size: 1.65rem !important; }
+            .btn-action { width: 100%; justify-content: center; }
+        }
+        @media (min-width: 992px) {
+            .sidebar-toc .position-sticky {
+                max-height: calc(100vh - 110px);
+                overflow-y: auto;
+                scrollbar-width: thin;
+                scrollbar-color: var(--line) transparent;
+                padding-right: 4px;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -220,6 +239,9 @@
                 <span style="font-family: 'Space Grotesk'; font-weight:700; letter-spacing: -0.5px;">UNICAES <span style="color:var(--turq)">| INFORME TÉCNICO</span></span>
             </a>
             <div class="d-flex align-items-center gap-2 ms-auto">
+                <button class="btn btn-sm btn-outline-info d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasToc" aria-label="Abrir Índice">
+                    <i class="bi bi-list-nested"></i> <span class="d-none d-sm-inline">Índice</span>
+                </button>
                 <a href="index.html" class="btn btn-sm btn-outline-turq">
                     <i class="bi bi-house-door-fill"></i> Portal Principal
                 </a>
@@ -235,6 +257,38 @@
             </div>
         </div>
     </nav>
+
+    <!-- OFFCANVAS ÍNDICE PARA CELULARES Y TABLETS -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasToc" style="background: var(--navy2); color: var(--text); border-right: 1px solid var(--line); width: 285px;">
+        <div class="offcanvas-header border-bottom" style="border-color: var(--line) !important; padding: 16px 20px;">
+            <h5 class="offcanvas-title text-info fw-bold mb-0" style="font-family:'Space Grotesk'; font-size:16px;">
+                <i class="bi bi-list-nested me-2"></i> Índice del Informe
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-3">
+            <nav class="d-flex flex-column gap-1" id="mobileTocNav">
+                <a href="#portada" class="toc-link" data-bs-dismiss="offcanvas">1. Portada Institucional</a>
+                <a href="#intro" class="toc-link" data-bs-dismiss="offcanvas">2. Introducción &amp; Justificación</a>
+                <a href="#objetivos" class="toc-link" data-bs-dismiss="offcanvas">3. Objetivos del Trabajo</a>
+                <a href="#ficha" class="toc-link" data-bs-dismiss="offcanvas">4. Ficha Técnica CWE-79</a>
+                <a href="#taxonomia" class="toc-link" data-bs-dismiss="offcanvas">5. Taxonomía de Ataque XSS</a>
+                <a href="#poc" class="toc-link" data-bs-dismiss="offcanvas">6. Prueba de Concepto (PoC)</a>
+                <a href="#cia" class="toc-link" data-bs-dismiss="offcanvas">7. Triada de Seguridad (CIA)</a>
+                <a href="#defensa" class="toc-link" data-bs-dismiss="offcanvas">8. Estrategia de Blindaje</a>
+                <a href="#conclusiones" class="toc-link" data-bs-dismiss="offcanvas">9. Conclusiones y Bibliografía</a>
+            </nav>
+            <hr style="border-color: var(--line);">
+            <div class="d-flex flex-column gap-2">
+                <a href="Informe_Tecnico_Vulnerabilidad_XSS_UNICAES.pdf" download class="btn btn-sm btn-turq w-100">
+                    <i class="bi bi-file-earmark-pdf-fill"></i> Descargar PDF
+                </a>
+                <a href="index.html" class="btn btn-sm btn-outline-turq w-100">
+                    <i class="bi bi-house-door-fill"></i> Portal Principal
+                </a>
+            </div>
+        </div>
+    </div>
 
     <div class="container py-4">
         <div class="row">
@@ -593,7 +647,7 @@ Host: portal-academico.edu.sv
     <script>
     document.addEventListener("DOMContentLoaded", function() {
         const sections = Array.from(document.querySelectorAll("section[id]"));
-        const navLinks = Array.from(document.querySelectorAll("#tocNav .toc-link"));
+        const navLinks = Array.from(document.querySelectorAll("#tocNav .toc-link, #mobileTocNav .toc-link"));
 
         function updateScrollspy() {
             const scrollPos = window.scrollY + 130; // Compensación de navbar fija
