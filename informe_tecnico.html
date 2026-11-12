@@ -80,7 +80,7 @@
             font-family: 'Inter', system-ui, sans-serif;
             line-height: 1.7;
             margin: 0;
-            padding-top: 70px;
+            padding-top: 0;
         }
         body::before {
             content: "";
@@ -227,36 +227,360 @@
             }
         }
 
+    
+/* ================= UNIFIED INSTITUTIONAL NAVBAR ================= */
+.unified-navbar {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1040;
+    background: rgba(7, 16, 30, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(25, 211, 197, 0.25);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+    padding: 8px 16px;
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    transition: all 0.25s ease;
+}
+
+.unified-navbar-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    width: 100%;
+}
+
+/* Brand Logo (Izquierda) - Conduce al Portal Principal */
+.unified-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none !important;
+    color: #FFFFFF !important;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.unified-brand:hover {
+    transform: translateY(-1px);
+    opacity: 0.95;
+}
+
+.unified-brand-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    background: rgba(25, 211, 197, 0.12);
+    border: 1px solid rgba(25, 211, 197, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #19D3C5;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    box-shadow: 0 0 12px rgba(25, 211, 197, 0.15);
+}
+
+.unified-brand-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.unified-brand-title {
+    font-size: 0.96rem;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+    color: #FFFFFF;
+}
+
+.unified-brand-title .brand-accent {
+    color: #19D3C5;
+}
+
+.unified-brand-sub {
+    font-size: 0.72rem;
+    color: #94A3B8;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    line-height: 1.2;
+}
+
+/* Nav links (Centro) */
+.unified-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.unified-nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: #CBD5E1 !important;
+    text-decoration: none !important;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.unified-nav-link:hover {
+    color: #19D3C5 !important;
+    background: rgba(25, 211, 197, 0.08);
+    border-color: rgba(25, 211, 197, 0.2);
+}
+
+.unified-nav-link.active {
+    color: #19D3C5 !important;
+    background: rgba(25, 211, 197, 0.15);
+    border-color: rgba(25, 211, 197, 0.4);
+    box-shadow: 0 0 10px rgba(25, 211, 197, 0.15);
+}
+
+/* Nav Actions (Derecha) */
+.unified-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.btn-unified {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 13px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-decoration: none !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
+.btn-unified-accent {
+    background: #19D3C5;
+    color: #07101E !important;
+    border-color: #19D3C5;
+}
+.btn-unified-accent:hover {
+    background: #20ebd9;
+    box-shadow: 0 0 14px rgba(25, 211, 197, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-unified-outline {
+    background: rgba(25, 211, 197, 0.08);
+    color: #19D3C5 !important;
+    border-color: rgba(25, 211, 197, 0.35);
+}
+.btn-unified-outline:hover {
+    background: rgba(25, 211, 197, 0.18);
+    border-color: #19D3C5;
+    color: #FFFFFF !important;
+}
+
+.btn-unified-success {
+    background: rgba(43, 212, 138, 0.12);
+    color: #2BD48A !important;
+    border-color: #2BD48A;
+}
+.btn-unified-success:hover {
+    background: #2BD48A;
+    color: #04271A !important;
+    box-shadow: 0 0 12px rgba(43, 212, 138, 0.35);
+}
+
+.btn-unified-danger {
+    background: rgba(255, 92, 119, 0.12);
+    color: #FF5C77 !important;
+    border-color: #FF5C77;
+}
+.btn-unified-danger:hover {
+    background: #FF5C77;
+    color: #FFFFFF !important;
+    box-shadow: 0 0 12px rgba(255, 92, 119, 0.35);
+}
+
+/* Badge de Modo del Simulador */
+.unified-mode-badge {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    white-space: nowrap;
+}
+
+.unified-mode-badge.mode-secure {
+    background: rgba(43, 212, 138, 0.15);
+    color: #2BD48A;
+    border: 1px solid rgba(43, 212, 138, 0.4);
+}
+
+.unified-mode-badge.mode-vuln {
+    background: rgba(255, 92, 119, 0.15);
+    color: #FF5C77;
+    border: 1px solid rgba(255, 92, 119, 0.4);
+}
+
+/* Selector Desplegable en Celulares / Pantallas Angostas */
+.unified-nav-switcher {
+    position: relative;
+    display: none;
+}
+
+.unified-mobile-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 240px;
+    background: #0B1B33;
+    border: 1px solid rgba(25, 211, 197, 0.35);
+    border-radius: 8px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.7);
+    padding: 6px;
+    z-index: 1060;
+}
+
+.unified-mobile-dropdown-menu.show {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.unified-mobile-dropdown-menu a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    color: #CBD5E1;
+    text-decoration: none !important;
+    font-size: 0.82rem;
+    font-weight: 600;
+    transition: all 0.15s ease;
+}
+
+.unified-mobile-dropdown-menu a:hover,
+.unified-mobile-dropdown-menu a.active {
+    background: rgba(25, 211, 197, 0.15);
+    color: #19D3C5 !important;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 991px) {
+    .unified-nav-links {
+        display: none !important;
+    }
+    .unified-nav-switcher {
+        display: inline-block !important;
+    }
+    .unified-brand-sub {
+        display: none !important;
+    }
+    .unified-navbar {
+        padding: 6px 12px;
+    }
+}
+
+@media print {
+    .unified-navbar, .unified-nav-switcher, .unified-mobile-dropdown-menu {
+        display: none !important;
+    }
+}
+
     </style>
 </head>
 <body>
 
-    <!-- Barra de Navegación Fija -->
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
-        <div class="container-fluid px-4">
-            <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
-                <i class="bi bi-shield-lock-fill text-info fs-4"></i>
-                <span style="font-family: 'Space Grotesk'; font-weight:700; letter-spacing: -0.5px;">UNICAES <span style="color:var(--turq)">| INFORME TÉCNICO</span></span>
+        <!-- ================= NAVBAR INSTITUCIONAL UNIFICADO ================= -->
+    <header class="unified-navbar">
+        <div class="unified-navbar-container">
+            <!-- LOGO IZQUIERDA: Regresa a la Página Principal -->
+            <a href="index.html" class="unified-brand" title="Volver a la Portada Principal">
+                <div class="unified-brand-icon">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <div class="unified-brand-text">
+                    <div class="unified-brand-title">UNICAES <span class="brand-accent">| SECURITY HUB</span></div>
+                    <div class="unified-brand-sub">Gestión de Seguridad &bull; Parcial 3</div>
+                </div>
             </a>
-            <div class="d-flex align-items-center gap-2 ms-auto">
-                <button class="btn btn-sm btn-outline-info d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasToc" aria-label="Abrir Índice">
+
+            <!-- NAVEGACIÓN CENTRAL: 5 Módulos del Ecosistema -->
+            <nav class="unified-nav-links" aria-label="Navegación del Ecosistema">
+                <a href="index.html" class="unified-nav-link ">
+                    <i class="bi bi-house-door"></i> Inicio
+                </a>
+                <a href="/simulador" class="unified-nav-link ">
+                    <i class="bi bi-play-circle"></i> Simulador
+                </a>
+                <a href="ebook_interactivo.html" class="unified-nav-link ">
+                    <i class="bi bi-book"></i> Ebook Interactivo
+                </a>
+                <a href="revista_tecnica.html" class="unified-nav-link ">
+                    <i class="bi bi-newspaper"></i> Revista Técnica
+                </a>
+                <a href="informe_tecnico.html" class="unified-nav-link active">
+                    <i class="bi bi-file-earmark-text"></i> Informe Técnico
+                </a>
+            </nav>
+
+            <!-- ACCIONES DERECHA -->
+            <div class="unified-nav-actions">
+                <!-- Dropdown selector en celulares / pantallas verticales -->
+                <div class="unified-nav-switcher">
+                    <button class="btn-unified btn-unified-outline" type="button" id="moduleSwitcherBtn" onclick="toggleUnifiedMenu(event)" title="Abrir selector de módulos">
+                        <i class="bi bi-grid-fill"></i> <span class="d-none d-sm-inline">Módulos</span>
+                    </button>
+                    <div class="unified-mobile-dropdown-menu" id="unifiedMobileDropdown">
+                        <div class="dropdown-header text-muted px-2 py-1" style="font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:#64748B;">Ecosistema Parcial 3</div>
+                        <a href="index.html" class=""><i class="bi bi-house-door-fill"></i> Inicio (Security Hub)</a>
+                        <a href="/simulador" class=""><i class="bi bi-play-circle-fill"></i> Security Workbench</a>
+                        <a href="ebook_interactivo.html" class=""><i class="bi bi-book-half"></i> Ebook Interactivo</a>
+                        <a href="revista_tecnica.html" class=""><i class="bi bi-newspaper"></i> Revista Técnica</a>
+                        <a href="informe_tecnico.html" class="active"><i class="bi bi-file-earmark-text-fill"></i> Informe Técnico</a>
+                    </div>
+                </div>
+
+                <button class="btn-unified btn-unified-outline d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasToc" aria-label="Abrir Índice">
                     <i class="bi bi-list-nested"></i> <span class="d-none d-sm-inline">Índice</span>
                 </button>
-                <a href="index.html" class="btn btn-sm btn-outline-turq">
-                    <i class="bi bi-house-door-fill"></i> Portal Principal
+                <a href="Informe_Tecnico_Vulnerabilidad_XSS_UNICAES.pdf" download class="btn-unified btn-unified-accent" title="Descargar informe técnico formal en PDF">
+                    <i class="bi bi-file-earmark-pdf-fill"></i> <span class="d-none d-sm-inline">Descargar</span> PDF
                 </a>
-                <a href="Informe_Tecnico_Vulnerabilidad_XSS_UNICAES.pdf" download class="btn btn-sm btn-turq">
-                    <i class="bi bi-file-earmark-pdf-fill"></i> Descargar PDF
+                <a href="Informe_Tecnico_Vulnerabilidad_XSS_UNICAES.docx" download class="btn-unified btn-unified-outline d-none d-md-inline-flex" title="Descargar formato Word">
+                    <i class="bi bi-file-earmark-word-fill"></i> Word
                 </a>
-                <a href="Informe_Tecnico_Vulnerabilidad_XSS_UNICAES.docx" download class="btn btn-sm btn-outline-turq d-none d-md-inline-flex">
-                    <i class="bi bi-file-earmark-word-fill"></i> Word (.docx)
-                </a>
-                <button onclick="window.print()" class="btn btn-sm btn-outline-secondary text-light d-none d-lg-inline-flex">
+                <button onclick="window.print()" class="btn-unified btn-unified-outline d-none d-lg-inline-flex" title="Imprimir informe">
                     <i class="bi bi-printer"></i> Imprimir
                 </button>
             </div>
         </div>
-    </nav>
+        
+    </header>
 
     <!-- OFFCANVAS ÍNDICE PARA CELULARES Y TABLETS -->
     <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasToc" style="background: var(--navy2); color: var(--text); border-right: 1px solid var(--line); width: 285px;">
