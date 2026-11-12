@@ -427,9 +427,6 @@
                     <li class="nav-item">
                         <a class="nav-link text-light px-3" href="#descargas">Descargas</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-light px-3" href="#guia">Guía de Componentes</a>
-                    </li>
                     <li class="nav-item ms-lg-2">
                         <a class="btn btn-sm btn-outline-info fw-bold d-inline-flex align-items-center gap-2" href="/simulador">
                             <i class="bi bi-play-circle-fill"></i> Simulador XSS
@@ -551,8 +548,8 @@
                         <a href="ebook_interactivo.html" class="btn-module btn-module-primary" style="background: var(--green); border-color: var(--green); color: #072214;">
                             <i class="bi bi-journal-code"></i> Abrir Ebook Interactivo Web
                         </a>
-                        <a href="#guia" class="btn-module btn-module-secondary">
-                            <i class="bi bi-info-circle"></i> ¿Qué diferencia tiene con el informe?
+                        <a href="ebook_interactivo.html#caso" class="btn-module btn-module-secondary">
+                            <i class="bi bi-shield-shaded"></i> Caso ForoClase &amp; Evidencias
                         </a>
                     </div>
                 </div>
@@ -736,46 +733,7 @@
         </div>
     </section>
 
-    <!-- GUÍA ACLARATORIA DE COMPONENTES -->
-    <section class="container py-5" id="guia">
-        <div class="text-center mb-4">
-            <span class="text-uppercase kicker text-info fw-bold" style="font-size:0.8rem; letter-spacing:1.5px; font-family:'JetBrains Mono';">
-                ORIENTACIÓN TÉCNICA
-            </span>
-            <h2 class="h3 fw-bold mt-1">¿Qué es cada componente y cómo se complementan?</h2>
-            <p class="text-muted small" style="max-width: 620px; margin: 0 auto;">
-                Explicación clara del propósito de cada documento y módulo creado para la entrega del Parcial 3.
-            </p>
-        </div>
-
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <div class="faq-item">
-                    <h5><i class="bi bi-question-circle-fill"></i> ¿Por qué tenemos dos versiones de "informe" (el informe formal y el "otro index" web)?</h5>
-                    <p>
-                        <strong>1. El Informe Técnico Pericial (PDF/DOCX/HTML):</strong> Es el documento oficial formal que exige la cátedra universitaria de Seguridad Informática. Contiene rigor metodológico, ficha CVSS v3.1, tabla de riesgos CIA, justificación académica y bibliografía normalizada.<br><br>
-                        <strong>2. El "Otro Index" (Ebook Web Interactivo):</strong> Es la contraparte pedagógica y multimedia desarrollada por el equipo. Utiliza la narrativa del <em>Caso ForoClase</em>, cómics interactivos y simuladores en el cliente para explicar el ciberataque de manera visual e intuitiva a cualquier audiencia. Ambos se complementan: uno aporta la formalidad técnica y el otro la divulgación práctica.
-                    </p>
-                </div>
-
-                <div class="faq-item">
-                    <h5><i class="bi bi-diagram-3-fill"></i> ¿Qué rol cumple el Simulador (Security Workbench)?</h5>
-                    <p>
-                        Es el entorno de laboratorio real desarrollado en Python con Flask. Permite a cualquier evaluador realizar ataques XSS en vivo (Reflejado, Almacenado y DOM), observar cómo el servidor C2 captura cookies de sesión, y verificar cómo las contramedidas (CSP, HttpOnly, Codificación Contextual) neutralizan el ataque al activar el interruptor de seguridad.
-                    </p>
-                </div>
-
-                <div class="faq-item">
-                    <h5><i class="bi bi-printer-fill"></i> ¿Para qué sirve la Revista Técnica (Edición Impresa)?</h5>
-                    <p>
-                        Es una versión editorial de 20 páginas maquetada para lectura continua o impresión física en formato carta. Incluye la cronología forense, tablas de entidades HTML y el glosario de términos para quienes prefieran estudiar el caso sin depender de un navegador interactivo.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- MODAL: INSTRUCCIONES DEL SIMULADOR -->
+<!-- MODAL: INSTRUCCIONES DEL SIMULADOR -->
     <div class="modal fade" id="modalInstrucciones" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
