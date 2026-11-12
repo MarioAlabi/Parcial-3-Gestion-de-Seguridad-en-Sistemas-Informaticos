@@ -19,17 +19,24 @@
 Este repositorio contiene la entrega técnica integral correspondiente al Parcial 3, enfocada en la investigación, explotación controlada, análisis pericial y mitigación en profundidad de la vulnerabilidad **Cross-Site Scripting (XSS / CWE-79)**.
 
 ```
-├── Laboratorio_XSS/                       # Simulador interactivo en Python/Flask (Security Workbench)
-│   ├── app.py                             # Backend Flask con los 3 vectores y Pipeline Debugger
-│   ├── iniciar_laboratorio.sh             # Script de arranque automatizado
-│   ├── requirements.txt                   # Dependencias mínimas
-│   └── README.md                          # Manual técnico del laboratorio
+├── index.html                             # PORTAL CENTRAL (Homepage unificada del ecosistema)
+├── ebook_interactivo.html                 # Ebook Web interactivo multimedia (El caso ForoClase)
+├── ebook_revista_impresa.html             # Revista técnica editorial (20 páginas ilustradas)
+├── XSS_Academy_Edicion_Impresa.pdf        # Revista editorial maquetada en PDF (20 págs)
+├── informe_tecnico.html                   # Visor web del Informe Técnico Pericial
 ├── Informe_Tecnico_Vulnerabilidad_XSS_UNICAES.docx  # Informe técnico en formato Word
-├── Informe_Tecnico_Vulnerabilidad_XSS_UNICAES.pdf   # Informe técnico en formato PDF
+├── Informe_Tecnico_Vulnerabilidad_XSS_UNICAES.pdf   # Informe técnico en formato PDF oficial
 ├── Informe_Tecnico_Vulnerabilidad_XSS_UNICAES.md    # Informe técnico en formato Markdown
+├── Presentacion_XSS_UNICAES.html          # Diapositivas web interactivas para exposición
+├── Presentacion_XSS_UNICAES.pptx          # Presentación en formato PowerPoint
 ├── Guion_Presentacion_y_Defensa_XSS.md              # Guión y preguntas clave para la defensa
-├── generar_informe_docx.py                          # Script generador del documento Word profesional
-└── Laboratorio_XSS_UNICAES.zip                      # Paquete comprimido portable del laboratorio
+├── Laboratorio_XSS/                       # Simulador interactivo en Python/Flask (Security Workbench)
+│   ├── app.py                             # Servidor Flask con los 3 vectores y enrutador del portal
+│   ├── iniciar_laboratorio.sh             # Script de arranque automatizado
+│   ├── templates/index.html               # Interfaz del Workbench y Pipeline Debugger
+│   ├── Dockerfile / docker-compose.yml    # Contenedorización lista para producción
+│   └── README.md                          # Manual técnico del laboratorio
+└── Laboratorio_XSS_UNICAES.zip            # Paquete comprimido portable de entrega
 ```
 
 ---

@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Presentación: Cross-Site Scripting (XSS) - UNICAES</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Fira+Code:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0b132b;
+      --bg-card: #1c2541;
+      --border: #334155;
+      --cyan: #00e8c6;
+      --blue: #38bdf8;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --green: #10b981;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      user-select: none;
+    }
+
+    #deck {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      padding: 3rem 4rem 4.5rem 4rem;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(30px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
+    }
+
+    .slide-header {
+      margin-bottom: 1.5rem;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0.8rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .slide-category {
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 0.3rem;
+    }
+
+    .slide-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .slide-num {
+      font-family: 'Fira Code', monospace;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    .slide-content-split {
+      display: grid;
+      grid-template-columns: 1fr 1.25fr;
+      gap: 2.2rem;
+      flex: 1;
+      align-items: center;
+    }
+
+    .card-info {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      justify-content: center;
+    }
+
+    .card-info h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-info ul { list-style: none; }
+
+    .card-info li {
+      margin-bottom: 1.05rem;
+      line-height: 1.55;
+      font-size: 1.02rem;
+      position: relative;
+      padding-left: 1.5rem;
+    }
+
+    .card-info li::before {
+      content: "▹";
+      position: absolute;
+      left: 0;
+      color: var(--cyan);
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    .card-info strong { color: var(--text); }
+    .card-info span.desc { color: var(--text-muted); }
+
+    .image-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+    }
+
+    .image-container img {
+      width: 100%;
+      max-height: 520px;
+      object-fit: contain;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+    }
+
+    /* PORTADA */
+    .slide-cover {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      height: 100%;
+      max-width: 950px;
+      margin: 0 auto;
+    }
+
+    .cover-badge {
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--cyan);
+      letter-spacing: 0.15em;
+      margin-bottom: 1.2rem;
+    }
+
+    .cover-title {
+      font-size: 3.8rem;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 1.2rem;
+      background: linear-gradient(135deg, #ffffff 40%, var(--cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .cover-subtitle {
+      font-size: 1.4rem;
+      color: var(--blue);
+      margin-bottom: 2.5rem;
+    }
+
+    .cover-footer {
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* INTEGRANTES */
+    .grid-integrantes {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 2rem;
+      flex: 1;
+      align-items: center;
+    }
+
+    .card-integrante {
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 2.2rem 1.8rem;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .avatar-icon {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .card-integrante h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+      color: var(--text);
+    }
+
+    .card-integrante .carnet {
+      font-family: 'Fira Code', monospace;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--cyan);
+      margin-bottom: 0.6rem;
+    }
+
+    .card-integrante .carrera {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+
+    /* CONTROLES */
+    #controls {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 2rem;
+      display: flex;
+      gap: 0.8rem;
+      z-index: 100;
+    }
+
+    .btn-ctrl {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
+    }
+
+    .btn-ctrl:hover {
+      background: var(--cyan);
+      color: var(--bg-dark);
+      border-color: var(--cyan);
+    }
+
+    #progress-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      height: 4px;
+      background: var(--cyan);
+      width: 0%;
+      transition: width 0.3s ease;
+      z-index: 101;
+    }
+
+    #speaker-notes-modal {
+      display: none;
+      position: fixed;
+      bottom: 4.5rem;
+      left: 2rem;
+      width: 480px;
+      background: rgba(15, 23, 42, 0.96);
+      border: 1px solid var(--cyan);
+      border-radius: 12px;
+      padding: 1.2rem;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    #speaker-notes-modal h4 {
+      color: var(--cyan);
+      margin-bottom: 0.5rem;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<a href="index.html" style="position:fixed; top:12px; left:12px; z-index:9999; background:rgba(11,27,51,0.85); backdrop-filter:blur(8px); border:1px solid #19D3C5; color:#19D3C5; padding:6px 12px; border-radius:6px; font-family:'Inter', sans-serif; font-size:12px; font-weight:700; text-decoration:none; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
+  🏠 Portal
+</a>
+
+
+  <div id="deck">
+
+    <!-- SLIDE 1: PORTADA -->
+    <div class="slide active" data-notes="Buenos días ingeniero y compañeros. Hoy presentaremos de forma sencilla y directa qué es Cross-Site Scripting (XSS), sus principales tipos, ejemplos reales famosos y cómo prevenirlo.">
+      <div class="slide-cover">
+        <div class="cover-badge">UNIVERSIDAD CATÓLICA DE EL SALVADOR • FIA</div>
+        <h1 class="cover-title">CROSS-SITE SCRIPTING<br>(XSS)</h1>
+        <div class="cover-subtitle">Conceptos Fundamentales, Clasificación de Tipos, Casos Reales y Prevención</div>
+        <div class="cover-footer">
+          <div>
+            <strong>Gestión de Seguridad en Sistemas Informáticos — Sección “A”</strong><br>
+            <span>Evaluación del Parcial 3</span>
+          </div>
+          <div style="text-align: right;">
+            <strong>Santa Ana, El Salvador</strong><br>
+            <span>Noviembre de 2026</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: INTEGRANTES -->
+    <div class="slide" data-notes="Nuestro equipo está conformado por Dennis Guevara, Mario Villeda y Luis Balcaceres, estudiantes de Ingeniería en Desarrollo de Software.">
+      <div class="slide-header">
+        <div>
+          <div class="slide-category">Equipo de Trabajo</div>
+          <div class="slide-title">Integrantes de Investigación</div>
+        </div>
+        <div class="slide-num">02 / 08</div>
+      </div>
+      <div class="grid-integrantes">
+        <div class="card-integrante" style="border-top: 4px solid var(--cyan);">
+          <div class="avatar-icon" style="border: 2px solid var(--cyan); color: var(--cyan);">👤</div>
+          <h3>Dennis Ademir Guevara Martínez</h3>
+          <div class="carnet">2023-GM-607</div>
+          <div class="carrera">Ing. en Desarrollo de Software</div>
+        </div>
+        <div class="card-integrante" style="border-top: 4px solid var(--blue);">
+          <div class="avatar-icon" style="border: 2px solid var(--blue); color: var(--blue);">👤</div>
+          <h3>Mario Edgardo Villeda Alabi</h3>
+          <div class="carnet">2023-VA-651</div>
+          <div class="carrera">Ing. en Desarrollo de Software</div>
+        </div>
+        <div class="card-integrante" style="border-top: 4px solid var(--amber);">
+          <div class="avatar-icon" style="border: 2px solid var(--amber); color: var(--amber);">👤</div>
+          <h3>Luis Felipe Balcaceres Silvestre</h3>
+          <div class="carnet">2023-BS-602</div>
+          <div class="carrera">Ing. en Desarrollo de Software</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: ¿QUÉ ES XSS? -->
+    <div class="slide" data-notes="Cross-Site Scripting ocurre cuando un atacante inyecta JavaScript en una web legítima. El navegador lo ejecuta con plena confianza, lo que permite el robo de cuentas o suplantación.">
+      <div class="slide-header">
+        <div>
+          <div class="slide-category">Concepto Básico</div>
+          <div class="slide-title">¿Qué es Cross-Site Scripting (XSS)?</div>
+        </div>
+        <div class="slide-num">03 / 08</div>
+      </div>
+      <div class="slide-content-split">
+        <div class="card-info" style="border-left: 4px solid var(--cyan);">
+          <h3 style="color: var(--cyan);">DESCRIPCIÓN SENCILLA</h3>
+          <ul>
+            <li>
+              <strong>¿Qué es?</strong><br>
+              <span class="desc">Es una vulnerabilidad web que permite a un atacante inyectar scripts maliciosos (generalmente JavaScript) en páginas vistas por otros usuarios.</span>
+            </li>
+            <li>
+              <strong>¿Por qué ocurre?</strong><br>
+              <span class="desc">Porque el sitio web recibe datos del usuario y los muestra en pantalla sin validarlos ni codificarlos antes.</span>
+            </li>
+            <li>
+              <strong>¿Cuál es el peligro?</strong><br>
+              <span class="desc">El navegador no puede distinguir si el código es legítimo o malicioso y lo ejecuta con todos los privilegios del sitio web.</span>
+            </li>
+            <li>
+              <strong>Impacto principal:</strong><br>
+              <span class="desc">Robo de sesiones (Session Hijacking), alteración visual de la página y captura de contraseñas.</span>
+            </li>
+          </ul>
+        </div>
+        <div class="image-container">
+          <img src="./imagenes/img_que_es_xss.png" alt="¿Qué es XSS?">
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: XSS REFLEJADO -->
+    <div class="slide" data-notes="En el XSS Reflejado el código malicioso no se guarda en el servidor; viaja en el enlace y el servidor lo refleja de inmediato en la respuesta. Requiere que la víctima haga clic.">
+      <div class="slide-header">
+        <div>
+          <div class="slide-category">Clasificación de XSS</div>
+          <div class="slide-title">1. XSS Reflejado (No Persistente)</div>
+        </div>
+        <div class="slide-num">04 / 08</div>
+      </div>
+      <div class="slide-content-split">
+        <div class="card-info" style="border-left: 4px solid var(--cyan);">
+          <h3 style="color: var(--cyan);">CARACTERÍSTICAS CLAVE</h3>
+          <ul>
+            <li>
+              <strong>¿Cómo viaja?</strong><br>
+              <span class="desc">El script malicioso viaja directamente dentro de la petición (por ejemplo, en un parámetro de búsqueda en la URL como <code>?q=script</code>).</span>
+            </li>
+            <li>
+              <strong>No es persistente:</strong><br>
+              <span class="desc">El servidor refleja la carga en la respuesta HTML, pero <strong>no la guarda</strong> en la base de datos.</span>
+            </li>
+            <li>
+              <strong>Requiere ingeniería social:</strong><br>
+              <span class="desc">El atacante debe convencer a la víctima de hacer clic en un enlace manipulado (por correo o chat).</span>
+            </li>
+            <li>
+              <strong>Mitigación:</strong><br>
+              <span class="desc">Codificar la salida con <code>html.escape()</code> para que los caracteres <code>&lt;</code> y <code>&gt;</code> se muestren como texto plano.</span>
+            </li>
+          </ul>
+        </div>
+        <div class="image-container">
+          <img src="./imagenes/img_xss_reflejado.png" alt="XSS Reflejado">
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: XSS ALMACENADO -->
+    <div class="slide" data-notes="El XSS Almacenado es el más destructor porque queda guardado en la base de datos. Cualquier usuario que visite la web se infecta automáticamente sin hacer clic en nada extraño.">
+      <div class="slide-header">
+        <div>
+          <div class="slide-category">Clasificación de XSS</div>
+          <div class="slide-title">2. XSS Almacenado (Persistente)</div>
+        </div>
+        <div class="slide-num">05 / 08</div>
+      </div>
+      <div class="slide-content-split">
+        <div class="card-info" style="border-left: 4px solid var(--red);">
+          <h3 style="color: var(--red);">EL TIPO MÁS PELIGROSO</h3>
+          <ul>
+            <li>
+              <strong>Guardado en el servidor:</strong><br>
+              <span class="desc">El código malicioso se almacena de forma permanente en la Base de Datos (en foros, comentarios, perfiles).</span>
+            </li>
+            <li>
+              <strong>Infección pasiva y masiva:</strong><br>
+              <span class="desc">Cualquier usuario que entre a ver esa sección del sitio web recibe y ejecuta el script malicioso automáticamente.</span>
+            </li>
+            <li>
+              <strong>Sin enlaces engañosos:</strong><br>
+              <span class="desc">La víctima no necesita hacer clic en ningún enlace externo: la propia página web legítima la infecta.</span>
+            </li>
+            <li>
+              <strong>Alcance masivo:</strong><br>
+              <span class="desc">Puede comprometer a cientos de usuarios en segundos, incluidos los administradores del portal.</span>
+            </li>
+          </ul>
+        </div>
+        <div class="image-container">
+          <img src="./imagenes/img_xss_almacenado.png" alt="XSS Almacenado">
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 6: XSS BASADO EN DOM -->
+    <div class="slide" data-notes="En el XSS en DOM el servidor no interviene en absoluto. El fallo está en los scripts JavaScript locales que usan innerHTML con datos de la URL como location.hash.">
+      <div class="slide-header">
+        <div>
+          <div class="slide-category">Clasificación de XSS</div>
+          <div class="slide-title">3. XSS Basado en DOM (Client-Side)</div>
+        </div>
+        <div class="slide-num">06 / 08</div>
+      </div>
+      <div class="slide-content-split">
+        <div class="card-info" style="border-left: 4px solid var(--amber);">
+          <h3 style="color: var(--amber);">100% EN EL NAVEGADOR</h3>
+          <ul>
+            <li>
+              <strong>El servidor no interviene:</strong><br>
+              <span class="desc">A diferencia de los anteriores, el servidor web nunca recibe ni procesa la carga. Ocurre enteramente en el cliente.</span>
+            </li>
+            <li>
+              <strong>Fuente y Sumidero:</strong><br>
+              <span class="desc">JavaScript lee una fuente (como el fragmento <code>#</code> en la URL con <code>location.hash</code>) y la escribe con funciones peligrosas como <code>innerHTML</code>.</span>
+            </li>
+            <li>
+              <strong>Ciego para los WAFs:</strong><br>
+              <span class="desc">Como los datos nunca viajan por la red hacia el backend, los firewalls tradicionales no lo detectan.</span>
+            </li>
+            <li>
+              <strong>Solución en Frontend:</strong><br>
+              <span class="desc">Reemplazar <code>innerHTML</code> por <code>textContent</code> para insertar datos como texto literal seguro.</span>
+            </li>
+          </ul>
+        </div>
+        <div class="image-container">
+          <img src="./imagenes/img_xss_dom.png" alt="XSS en DOM">
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7: CASOS FAMOSOS -->
+    <div class="slide" data-notes="Para ver que el XSS no es solo teoría, existen casos históricos impactantes: el Gusano Samy en MySpace infectó a un millón de personas en menos de un día; el gusano de Twitter provocó retweets automáticos masivos en 2014; y en Yahoo Mail permitía espiar la bandeja de entrada con solo abrir un correo.">
+      <div class="slide-header">
+        <div>
+          <div class="slide-category">Impacto en el Mundo Real</div>
+          <div class="slide-title">Casos Famosos de Ataques XSS</div>
+        </div>
+        <div class="slide-num">07 / 08</div>
+      </div>
+      <div class="slide-content-split">
+        <div class="card-info" style="border-left: 4px solid var(--red);">
+          <h3 style="color: var(--red);">TRES CASOS HISTÓRICOS</h3>
+          <ul>
+            <li>
+              <strong>1. Gusano Samy (MySpace 2005):</strong><br>
+              <span class="desc">Infectó a más de <strong>1 millón de usuarios en 20 horas</strong>. Forzaba a agregarlo como amigo con la frase <em>"Samy is my hero"</em> y colapsó los servidores de MySpace.</span>
+            </li>
+            <li>
+              <strong>2. Gusano de TweetDeck / Twitter (2014):</strong><br>
+              <span class="desc">Un tweet con script que forzaba <strong>auto-retweets masivos</strong> con solo pasar el cursor sobre él. Afectó a miles de cuentas y obligó al cierre temporal del servicio.</span>
+            </li>
+            <li>
+              <strong>3. Espionaje en Yahoo! Mail (2015):</strong><br>
+              <span class="desc">XSS Almacenado en emails HTML. Bastaba con abrir un correo para que el atacante <strong>leyera todos tus correos privados</strong> y enviara mensajes en tu nombre.</span>
+            </li>
+          </ul>
+        </div>
+        <div class="image-container">
+          <img src="./imagenes/img_casos_famosos.png" alt="Casos Famosos de XSS">
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 8: PREVENCIÓN -->
+    <div class="slide" data-notes="Para erradicar XSS aplicamos tres defensas: codificar salidas (Output Encoding), activar HttpOnly en las cookies para que no las puedan robar, y cabeceras CSP. Muchas gracias.">
+      <div class="slide-header">
+        <div>
+          <div class="slide-category">Defensa Integral</div>
+          <div class="slide-title">¿Cómo Prevenir y Defendernos de XSS?</div>
+        </div>
+        <div class="slide-num">08 / 08</div>
+      </div>
+      <div class="slide-content-split">
+        <div class="card-info" style="border-left: 4px solid var(--green);">
+          <h3 style="color: var(--green);">TRES REGLAS DE ORO</h3>
+          <ul>
+            <li>
+              <strong>1. Codificación de Salida:</strong><br>
+              <span class="desc">Nunca insertar datos de usuario sin escapar. Convertir <code>&lt;</code> en <code>&amp;lt;</code> y <code>&gt;</code> en <code>&amp;gt;</code> para que el navegador los pinte como texto plano.</span>
+            </li>
+            <li>
+              <strong>2. Cookies con HttpOnly:</strong><br>
+              <span class="desc">Configurar <code>HttpOnly=True</code> en las cookies de sesión para que JavaScript no pueda leerlas ni robar la sesión.</span>
+            </li>
+            <li>
+              <strong>3. Cabecera CSP (Content Security Policy):</strong><br>
+              <span class="desc">Restringir qué scripts pueden ejecutarse en el navegador, prohibiendo scripts en línea (<code>'unsafe-inline'</code>).</span>
+            </li>
+            <li>
+              <strong>Conclusión:</strong><br>
+              <span class="desc">Aplicar estas tres medidas en conjunto blindará completamente la aplicación web.</span>
+            </li>
+          </ul>
+        </div>
+        <div class="image-container">
+          <img src="./imagenes/img_prevencion.png" alt="Prevención de XSS">
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CONTROLES -->
+  <div id="controls">
+    <button class="btn-ctrl" onclick="toggleNotes()">📝 Notas (N)</button>
+    <button class="btn-ctrl" onclick="prevSlide()">◀ Anterior</button>
+    <button class="btn-ctrl" onclick="nextSlide()">Siguiente ▶</button>
+    <button class="btn-ctrl" onclick="toggleFullscreen()">⛶ Pantalla Completa (F)</button>
+  </div>
+
+  <div id="progress-bar"></div>
+
+  <div id="speaker-notes-modal">
+    <h4>🎙️ NOTAS PARA EL ORADOR:</h4>
+    <p id="notes-content">Notas...</p>
+  </div>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const progressBar = document.getElementById('progress-bar');
+    const notesModal = document.getElementById('speaker-notes-modal');
+    const notesContent = document.getElementById('notes-content');
+    let currentSlide = 0;
+
+    function showSlide(index) {
+      if (index < 0) index = 0;
+      if (index >= slides.length) index = slides.length - 1;
+
+      slides[currentSlide].classList.remove('active');
+      currentSlide = index;
+      slides[currentSlide].classList.add('active');
+
+      const pct = ((currentSlide + 1) / slides.length) * 100;
+      progressBar.style.width = pct + '%';
+
+      const notes = slides[currentSlide].getAttribute('data-notes') || 'Sin notas.';
+      notesContent.textContent = notes;
+    }
+
+    function nextSlide() { showSlide(currentSlide + 1); }
+    function prevSlide() { showSlide(currentSlide - 1); }
+
+    function toggleNotes() {
+      notesModal.style.display = (notesModal.style.display === 'block') ? 'none' : 'block';
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => console.log(err));
+      } else {
+        document.exitFullscreen().catch(err => console.log(err));
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') nextSlide();
+      else if (e.key === 'ArrowLeft' || e.key === 'PageUp') prevSlide();
+      else if (e.key === 'n' || e.key === 'N') toggleNotes();
+      else if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+      else if (e.key === 'Home') showSlide(0);
+      else if (e.key === 'End') showSlide(slides.length - 1);
+    });
+
+    showSlide(0);
+  </script>
+</body>
+</html>

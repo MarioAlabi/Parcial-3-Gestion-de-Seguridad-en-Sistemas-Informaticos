@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNICAES | Portal Central de Ciberseguridad - XSS (CWE-79)</title>
+    <!-- Tipografías de alta legibilidad técnica -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        :root {
+            --navy: #0B1B33;
+            --navy2: #12284A;
+            --navy3: #1C3A66;
+            --line: #25426E;
+            --turq: #19D3C5;
+            --turq2: #0FA89C;
+            --white: #ffffff;
+            --text: #DDE7F5;
+            --muted: #8FA3C2;
+            --red: #FF5C6C;
+            --amber: #FFB547;
+            --green: #2BD48A;
+            --bg-dark: #07101E;
+        }
+
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: var(--navy);
+            color: var(--text);
+            font-family: 'Inter', system-ui, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Trama sutil cyberpunk en el fondo */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background-image:
+                linear-gradient(rgba(25, 211, 197, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(25, 211, 197, 0.04) 1px, transparent 1px);
+            background-size: 38px 38px;
+            pointer-events: none;
+        }
+
+        h1, h2, h3, h4, h5 {
+            font-family: 'Space Grotesk', system-ui, sans-serif;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        code, .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Barra de Navegación */
+        .navbar-custom {
+            background: rgba(11, 27, 51, 0.92);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .brand-logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-logo span {
+            color: var(--turq);
+        }
+
+        /* Hero Header */
+        .hero-section {
+            padding: 70px 0 50px;
+            position: relative;
+            background: radial-gradient(circle at 50% 20%, rgba(25, 211, 197, 0.12) 0%, transparent 65%);
+        }
+
+        .badge-academic {
+            background: rgba(25, 211, 197, 0.12);
+            border: 1px solid rgba(25, 211, 197, 0.4);
+            color: var(--turq);
+            font-family: 'JetBrains Mono', monospace;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .hero-title {
+            font-size: clamp(2.2rem, 5vw, 3.6rem);
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -1px;
+            margin: 18px 0;
+        }
+
+        .hero-title .gradient-text {
+            background: linear-gradient(135deg, #ffffff 40%, var(--turq) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-desc {
+            font-size: 1.15rem;
+            color: #C2D3EA;
+            max-width: 820px;
+            margin: 0 auto 30px;
+        }
+
+        /* Ficha de Investigadores */
+        .authors-box {
+            background: rgba(18, 40, 74, 0.7);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 16px 24px;
+            display: inline-flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            max-width: 900px;
+        }
+
+        .author-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.92rem;
+        }
+
+        .author-carnet {
+            color: var(--turq);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            background: rgba(25, 211, 197, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* Tarjetas de Módulos (Grid Principal) */
+        .module-card {
+            background: var(--navy2);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 28px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+        }
+
+        .module-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--turq);
+            box-shadow: 0 16px 36px rgba(25, 211, 197, 0.18);
+        }
+
+        .module-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--line);
+            transition: background 0.3s;
+        }
+
+        .module-card:hover::before {
+            background: var(--turq);
+        }
+
+        .module-card.featured::before {
+            background: linear-gradient(90deg, var(--turq), var(--green));
+        }
+
+        .module-icon-wrap {
+            width: 54px;
+            height: 54px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+            background: rgba(25, 211, 197, 0.1);
+            color: var(--turq);
+            border: 1px solid rgba(25, 211, 197, 0.3);
+        }
+
+        .module-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+
+        .module-title {
+            font-size: 1.35rem;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .module-desc {
+            color: var(--muted);
+            font-size: 0.94rem;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            flex-grow: 1;
+        }
+
+        .btn-module {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 0.92rem;
+            padding: 10px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .btn-module-primary {
+            background: var(--turq);
+            color: var(--navy);
+            border: 1px solid var(--turq);
+        }
+
+        .btn-module-primary:hover {
+            background: #23f1e1;
+            color: var(--navy);
+            transform: scale(1.01);
+        }
+
+        .btn-module-secondary {
+            background: rgba(25, 211, 197, 0.08);
+            color: var(--turq);
+            border: 1px solid rgba(25, 211, 197, 0.3);
+        }
+
+        .btn-module-secondary:hover {
+            background: rgba(25, 211, 197, 0.18);
+            color: #fff;
+            border-color: var(--turq);
+        }
+
+        /* Centro de Descargas */
+        .downloads-box {
+            background: linear-gradient(180deg, var(--navy2) 0%, rgba(11, 27, 51, 0.8) 100%);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 36px 30px;
+            position: relative;
+        }
+
+        .download-pill {
+            background: rgba(11, 27, 51, 0.7);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            transition: all 0.25s;
+            text-decoration: none;
+            color: var(--text);
+            height: 100%;
+        }
+
+        .download-pill:hover {
+            border-color: var(--turq);
+            background: rgba(25, 211, 197, 0.06);
+            transform: translateY(-2px);
+            color: #fff;
+        }
+
+        .download-pill-icon {
+            font-size: 1.8rem;
+            color: var(--turq);
+            flex-shrink: 0;
+        }
+
+        .download-pill-info h6 {
+            margin: 0 0 3px;
+            font-size: 0.98rem;
+            color: #fff;
+        }
+
+        .download-pill-info span {
+            font-size: 0.8rem;
+            color: var(--muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .download-pill-btn {
+            background: var(--navy3);
+            color: var(--turq);
+            border: 1px solid var(--line);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+
+        .download-pill:hover .download-pill-btn {
+            background: var(--turq);
+            color: var(--navy);
+            border-color: var(--turq);
+        }
+
+        /* Sección de Orientación Técnica */
+        .faq-item {
+            background: rgba(18, 40, 74, 0.5);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 20px 24px;
+            margin-bottom: 14px;
+        }
+
+        .faq-item h5 {
+            color: var(--turq);
+            font-size: 1.05rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .faq-item p {
+            margin: 0;
+            font-size: 0.92rem;
+            color: #C0CFE3;
+        }
+
+        /* Modal de Inicio */
+        .modal-content {
+            background: var(--navy2);
+            color: var(--text);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid var(--line);
+        }
+
+        .modal-footer {
+            border-top: 1px solid var(--line);
+        }
+
+        pre.terminal-box {
+            background: #050b14;
+            border: 1px solid var(--line);
+            border-left: 3px solid var(--turq);
+            border-radius: 8px;
+            padding: 14px;
+            color: #2BD48A;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.88rem;
+        }
+
+        footer {
+            border-top: 1px solid var(--line);
+            background: rgba(7, 16, 30, 0.9);
+            padding: 30px 0;
+            color: var(--muted);
+            font-size: 0.88rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR SUPERIOR -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom sticky-top">
+        <div class="container px-4">
+            <a class="brand-logo" href="#">
+                <i class="bi bi-shield-lock-fill text-info fs-3"></i>
+                <span>UNICAES</span> | Security Hub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center gap-2">
+                    <li class="nav-item">
+                        <a class="nav-link text-light px-3" href="#modulos">Módulos del Proyecto</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-light px-3" href="#descargas">Descargas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-light px-3" href="#guia">Guía de Componentes</a>
+                    </li>
+                    <li class="nav-item ms-lg-2">
+                        <a class="btn btn-sm btn-outline-info fw-bold d-inline-flex align-items-center gap-2" href="http://localhost:5000" target="_blank">
+                            <i class="bi bi-play-circle-fill"></i> Simulador (Port 5000)
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <header class="hero-section text-center">
+        <div class="container px-4">
+            <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap mb-2">
+                <span class="badge-academic">
+                    <i class="bi bi-mortarboard-fill"></i> UNICAES &bull; FIA &bull; CICLO II-2026
+                </span>
+                <span class="badge-academic" style="border-color: rgba(255, 181, 71, 0.4); color: var(--amber);">
+                    <i class="bi bi-shield-exclamation"></i> EVALUACIÓN PARCIAL 3
+                </span>
+            </div>
+
+            <h1 class="hero-title">
+                Portal Integral de Seguridad Web<br>
+                <span class="gradient-text">Cross-Site Scripting (XSS · CWE-79)</span>
+            </h1>
+
+            <p class="hero-desc">
+                Plataforma unificada de investigación técnico-académica, laboratorio interactivo de explotación y mitigación (Security Workbench), divulgación multimedia y dossier editorial.
+            </p>
+
+            <!-- Cuadro de Autores -->
+            <div class="authors-box mb-4">
+                <div class="author-item">
+                    <i class="bi bi-person-fill text-info"></i>
+                    <span>Dennis Ademir Guevara Martínez</span>
+                    <span class="author-carnet">2023-GM-607</span>
+                </div>
+                <div class="author-item">
+                    <i class="bi bi-person-fill text-info"></i>
+                    <span>Mario Edgardo Villeda Alabi</span>
+                    <span class="author-carnet">2023-VA-651</span>
+                </div>
+                <div class="author-item">
+                    <i class="bi bi-person-fill text-info"></i>
+                    <span>Luis Felipe Balcaceres Silvestre</span>
+                    <span class="author-carnet">2023-BS-602</span>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="#modulos" class="btn btn-primary px-4 py-2 fw-bold" style="background:var(--turq); color:var(--navy); border:none;">
+                    <i class="bi bi-grid-fill me-2"></i> Explorar Módulos
+                </a>
+                <a href="#descargas" class="btn btn-outline-light px-4 py-2 fw-bold">
+                    <i class="bi bi-cloud-arrow-down-fill me-2"></i> Centro de Descargas
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- SECCIÓN DE MÓDULOS PRINCIPALES -->
+    <main class="container py-5" id="modulos">
+        <div class="text-center mb-5">
+            <span class="text-uppercase kicker text-info fw-bold" style="font-size:0.8rem; letter-spacing:1.5px; font-family:'JetBrains Mono';">
+                ARQUITECTURA DEL PROYECTO
+            </span>
+            <h2 class="display-6 fw-bold mt-1">Selecciona una Experiencia</h2>
+            <p class="text-muted" style="max-width: 650px; margin: 0 auto;">
+                Accede directamente al simulador en vivo, a los ebooks interactivo e impreso, o al informe técnico pericial de la universidad.
+            </p>
+        </div>
+
+        <div class="row g-4">
+            <!-- MÓDULO 1: SIMULADOR INTERACTIVO -->
+            <div class="col-lg-6">
+                <div class="module-card featured">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="module-icon-wrap" style="background: rgba(25, 211, 197, 0.15); color: var(--turq);">
+                            <i class="bi bi-terminal-split"></i>
+                        </div>
+                        <span class="badge py-1 px-2 text-uppercase fw-bold" style="background: rgba(25, 211, 197, 0.2); color: var(--turq); font-family: 'JetBrains Mono'; font-size: 0.72rem;">
+                            Laboratorio en Vivo
+                        </span>
+                    </div>
+                    <span class="module-badge text-info">Práctica Experimental · Flask</span>
+                    <h3 class="module-title">1. Security Workbench (Simulador)</h3>
+                    <p class="module-desc">
+                        Banco de pruebas interactivo en tiempo real con simulación de los 3 vectores de ataque (Reflejado, Almacenado y DOM), servidor de Comando y Control (C2) que roba cookies, Pipeline Debugger con ejecución paso a paso (tecla F10) y switch en caliente de mitigación (CSP Nivel 3, HttpOnly y Escapado Contextual).
+                    </p>
+                    <div class="d-flex flex-column gap-2 mt-auto">
+                        <a href="http://localhost:5000" target="_blank" class="btn-module btn-module-primary">
+                            <i class="bi bi-box-arrow-up-right"></i> Lanzar Simulador (http://localhost:5000)
+                        </a>
+                        <button type="button" class="btn-module btn-module-secondary" data-bs-toggle="modal" data-bs-target="#modalInstrucciones">
+                            <i class="bi bi-question-circle"></i> ¿Cómo iniciar el servidor local?
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MÓDULO 2: EBOOK INTERACTIVO WEB -->
+            <div class="col-lg-6">
+                <div class="module-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="module-icon-wrap" style="background: rgba(43, 212, 138, 0.15); color: var(--green);">
+                            <i class="bi bi-browser-chrome"></i>
+                        </div>
+                        <span class="badge py-1 px-2 text-uppercase fw-bold" style="background: rgba(43, 212, 138, 0.2); color: var(--green); font-family: 'JetBrains Mono'; font-size: 0.72rem;">
+                            Web Multimedia
+                        </span>
+                    </div>
+                    <span class="module-badge text-success">Divulgación & Storytelling</span>
+                    <h3 class="module-title">2. Ebook Interactivo ("El otro Index")</h3>
+                    <p class="module-desc">
+                        Plataforma web dinámica desarrollada con narrativa pericial ("El ataque a ForoClase"). Incluye viñetas del cómic ilustrado interactivo, simulador de inyecciones en el cliente, visualizador del DOM en tiempo real, historia de decisiones y la Sala de Evidencias forenses.
+                    </p>
+                    <div class="d-flex flex-column gap-2 mt-auto">
+                        <a href="ebook_interactivo.html" class="btn-module btn-module-primary" style="background: var(--green); border-color: var(--green); color: #072214;">
+                            <i class="bi bi-journal-code"></i> Abrir Ebook Interactivo Web
+                        </a>
+                        <a href="#guia" class="btn-module btn-module-secondary">
+                            <i class="bi bi-info-circle"></i> ¿Qué diferencia tiene con el informe?
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MÓDULO 3: EBOOK / REVISTA IMPRESA -->
+            <div class="col-lg-6">
+                <div class="module-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="module-icon-wrap" style="background: rgba(255, 181, 71, 0.15); color: var(--amber);">
+                            <i class="bi bi-book-half"></i>
+                        </div>
+                        <span class="badge py-1 px-2 text-uppercase fw-bold" style="background: rgba(255, 181, 71, 0.2); color: var(--amber); font-family: 'JetBrains Mono'; font-size: 0.72rem;">
+                            Edición 20 Páginas
+                        </span>
+                    </div>
+                    <span class="module-badge text-warning">Formato Revista · Editorial</span>
+                    <h3 class="module-title">3. Revista Técnica & Ebook Impreso</h3>
+                    <p class="module-desc">
+                        Dossier editorial maquetado en 20 páginas formato revista/comic pericial (Letter). Diseñado con diagramas detallados, tablas de entidades HTML, glosario de términos de ciberseguridad, cronología del caso y optimización para impresión o lectura secuencial.
+                    </p>
+                    <div class="d-flex flex-column gap-2 mt-auto">
+                        <a href="ebook_revista_impresa.html" class="btn-module btn-module-primary" style="background: var(--amber); border-color: var(--amber); color: #2B1600;">
+                            <i class="bi bi-eye-fill"></i> Leer Revista en Navegador
+                        </a>
+                        <a href="XSS_Academy_Edicion_Impresa.pdf" download class="btn-module btn-module-secondary">
+                            <i class="bi bi-file-earmark-pdf-fill"></i> Descargar PDF de la Revista (1.3 MB)
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MÓDULO 4: INFORME TÉCNICO ACADÉMICO -->
+            <div class="col-lg-6">
+                <div class="module-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="module-icon-wrap" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+                            <i class="bi bi-file-earmark-ruled-fill"></i>
+                        </div>
+                        <span class="badge py-1 px-2 text-uppercase fw-bold" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; font-family: 'JetBrains Mono'; font-size: 0.72rem;">
+                            Oficial UNICAES
+                        </span>
+                    </div>
+                    <span class="module-badge" style="color:#38bdf8;">Evaluación Parcial 3</span>
+                    <h3 class="module-title">4. Informe Técnico Pericial</h3>
+                    <p class="module-desc">
+                        Documento académico formal con rigor de ingeniería de software. Contiene la justificación técnica, objetivos, ficha estándar CWE-79 con métricas CVSS v3.1, análisis de impacto en la tríada CIA (Confidencialidad, Integridad, Disponibilidad), estrategia de Defensa en Profundidad y referencias bibliográficas.
+                    </p>
+                    <div class="d-flex flex-column gap-2 mt-auto">
+                        <a href="informe_tecnico.html" class="btn-module btn-module-primary" style="background: #38bdf8; border-color: #38bdf8; color: #04243b;">
+                            <i class="bi bi-file-text-fill"></i> Leer Informe Técnico en Línea
+                        </a>
+                        <div class="d-flex gap-2">
+                            <a href="Informe_Tecnico_Vulnerabilidad_XSS_UNICAES.pdf" download class="btn-module btn-module-secondary w-50">
+                                <i class="bi bi-file-pdf"></i> PDF Oficial
+                            </a>
+                            <a href="Informe_Tecnico_Vulnerabilidad_XSS_UNICAES.docx" download class="btn-module btn-module-secondary w-50">
+                                <i class="bi bi-file-word"></i> Word (.docx)
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MÓDULO 5 (EXTRA): PRESENTACIÓN Y DIAPOSITIVAS -->
+            <div class="col-12">
+                <div class="module-card" style="background: linear-gradient(90deg, rgba(18, 40, 74, 0.8) 0%, rgba(28, 58, 102, 0.6) 100%);">
+                    <div class="row align-items-center">
+                        <div class="col-lg-8">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge bg-info text-dark fw-bold">SUSTENTACIÓN ORAL</span>
+                                <span class="text-muted small">&bull; Defensa del Parcial 3</span>
+                            </div>
+                            <h4 class="mb-2"><i class="bi bi-easel2-fill text-info me-2"></i> Diapositivas de Exposición y Guión de Defensa</h4>
+                            <p class="text-muted mb-lg-0 small">
+                                Presentación visual interactiva en HTML lista para proyectar en el aula y archivo editable en Microsoft PowerPoint (.pptx).
+                            </p>
+                        </div>
+                        <div class="col-lg-4 text-lg-end">
+                            <div class="d-flex gap-2 justify-content-lg-end">
+                                <a href="Presentacion_XSS_UNICAES.html" class="btn-module btn-module-primary w-auto px-3">
+                                    <i class="bi bi-play-btn-fill"></i> Ver Diapositivas
+                                </a>
+                                <a href="Presentacion_XSS_UNICAES.pptx" download class="btn-module btn-module-secondary w-auto px-3">
+                                    <i class="bi bi-download"></i> PPTX
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- SECCIÓN DE DESCARGAS DIRECTAS -->
+    <section class="container py-5" id="descargas">
+        <div class="downloads-box">
+            <div class="text-center mb-4">
+                <span class="text-uppercase kicker text-info fw-bold" style="font-size:0.8rem; letter-spacing:1.5px; font-family:'JetBrains Mono';">
+                    CENTRO DE ARCHIVOS
+                </span>
+                <h2 class="h3 fw-bold mt-1"><i class="bi bi-cloud-arrow-down-fill text-info me-2"></i> Descargas Directas del Proyecto</h2>
+                <p class="text-muted small" style="max-width: 600px; margin: 0 auto;">
+                    Descarga en un clic todos los entregables oficiales, libros en PDF, informes en Word y código fuente del simulador.
+                </p>
+            </div>
+
+            <div class="row g-3">
+                <!-- Descarga 1: Informe PDF -->
+                <div class="col-md-6 col-lg-4">
+                    <a href="Informe_Tecnico_Vulnerabilidad_XSS_UNICAES.pdf" download class="download-pill">
+                        <i class="bi bi-file-earmark-pdf-fill download-pill-icon text-danger"></i>
+                        <div class="download-pill-info">
+                            <h6>Informe Técnico (PDF)</h6>
+                            <span>Formato Oficial UNICAES &bull; 182 KB</span>
+                        </div>
+                        <span class="download-pill-btn"><i class="bi bi-download"></i></span>
+                    </a>
+                </div>
+
+                <!-- Descarga 2: Informe Word -->
+                <div class="col-md-6 col-lg-4">
+                    <a href="Informe_Tecnico_Vulnerabilidad_XSS_UNICAES.docx" download class="download-pill">
+                        <i class="bi bi-file-earmark-word-fill download-pill-icon text-primary"></i>
+                        <div class="download-pill-info">
+                            <h6>Informe Técnico (DOCX)</h6>
+                            <span>Editable Word &bull; 40 KB</span>
+                        </div>
+                        <span class="download-pill-btn"><i class="bi bi-download"></i></span>
+                    </a>
+                </div>
+
+                <!-- Descarga 3: Ebook / Revista PDF -->
+                <div class="col-md-6 col-lg-4">
+                    <a href="XSS_Academy_Edicion_Impresa.pdf" download class="download-pill">
+                        <i class="bi bi-journal-album download-pill-icon text-warning"></i>
+                        <div class="download-pill-info">
+                            <h6>Revista Editorial (PDF)</h6>
+                            <span>20 Páginas Ilustradas &bull; 1.3 MB</span>
+                        </div>
+                        <span class="download-pill-btn"><i class="bi bi-download"></i></span>
+                    </a>
+                </div>
+
+                <!-- Descarga 4: Laboratorio ZIP -->
+                <div class="col-md-6 col-lg-4">
+                    <a href="Laboratorio_XSS_UNICAES.zip" download class="download-pill">
+                        <i class="bi bi-file-earmark-zip-fill download-pill-icon text-info"></i>
+                        <div class="download-pill-info">
+                            <h6>Simulador Completo (ZIP)</h6>
+                            <span>Flask + Docker + Tests &bull; 396 KB</span>
+                        </div>
+                        <span class="download-pill-btn"><i class="bi bi-download"></i></span>
+                    </a>
+                </div>
+
+                <!-- Descarga 5: Diapositivas PPTX -->
+                <div class="col-md-6 col-lg-4">
+                    <a href="Presentacion_XSS_UNICAES.pptx" download class="download-pill">
+                        <i class="bi bi-file-earmark-slides-fill download-pill-icon text-warning"></i>
+                        <div class="download-pill-info">
+                            <h6>Presentación (PPTX)</h6>
+                            <span>Diapositivas de Defensa &bull; 420 KB</span>
+                        </div>
+                        <span class="download-pill-btn"><i class="bi bi-download"></i></span>
+                    </a>
+                </div>
+
+                <!-- Descarga 6: Guión de Defensa MD -->
+                <div class="col-md-6 col-lg-4">
+                    <a href="Guion_Presentacion_y_Defensa_XSS.md" download class="download-pill">
+                        <i class="bi bi-chat-square-text-fill download-pill-icon text-success"></i>
+                        <div class="download-pill-info">
+                            <h6>Guión de Defensa (MD)</h6>
+                            <span>Preguntas Clave &bull; 12 KB</span>
+                        </div>
+                        <span class="download-pill-btn"><i class="bi bi-download"></i></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- GUÍA ACLARATORIA DE COMPONENTES -->
+    <section class="container py-5" id="guia">
+        <div class="text-center mb-4">
+            <span class="text-uppercase kicker text-info fw-bold" style="font-size:0.8rem; letter-spacing:1.5px; font-family:'JetBrains Mono';">
+                ORIENTACIÓN TÉCNICA
+            </span>
+            <h2 class="h3 fw-bold mt-1">¿Qué es cada componente y cómo se complementan?</h2>
+            <p class="text-muted small" style="max-width: 620px; margin: 0 auto;">
+                Explicación clara del propósito de cada documento y módulo creado para la entrega del Parcial 3.
+            </p>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="faq-item">
+                    <h5><i class="bi bi-question-circle-fill"></i> ¿Por qué tenemos dos versiones de "informe" (el informe formal y el "otro index" web)?</h5>
+                    <p>
+                        <strong>1. El Informe Técnico Pericial (PDF/DOCX/HTML):</strong> Es el documento oficial formal que exige la cátedra universitaria de Seguridad Informática. Contiene rigor metodológico, ficha CVSS v3.1, tabla de riesgos CIA, justificación académica y bibliografía normalizada.<br><br>
+                        <strong>2. El "Otro Index" (Ebook Web Interactivo):</strong> Es la contraparte pedagógica y multimedia desarrollada por el equipo. Utiliza la narrativa del <em>Caso ForoClase</em>, cómics interactivos y simuladores en el cliente para explicar el ciberataque de manera visual e intuitiva a cualquier audiencia. Ambos se complementan: uno aporta la formalidad técnica y el otro la divulgación práctica.
+                    </p>
+                </div>
+
+                <div class="faq-item">
+                    <h5><i class="bi bi-diagram-3-fill"></i> ¿Qué rol cumple el Simulador (Security Workbench)?</h5>
+                    <p>
+                        Es el entorno de laboratorio real desarrollado en Python con Flask. Permite a cualquier evaluador realizar ataques XSS en vivo (Reflejado, Almacenado y DOM), observar cómo el servidor C2 captura cookies de sesión, y verificar cómo las contramedidas (CSP, HttpOnly, Codificación Contextual) neutralizan el ataque al activar el interruptor de seguridad.
+                    </p>
+                </div>
+
+                <div class="faq-item">
+                    <h5><i class="bi bi-printer-fill"></i> ¿Para qué sirve la Revista Técnica (Edición Impresa)?</h5>
+                    <p>
+                        Es una versión editorial de 20 páginas maquetada para lectura continua o impresión física en formato carta. Incluye la cronología forense, tablas de entidades HTML y el glosario de términos para quienes prefieran estudiar el caso sin depender de un navegador interactivo.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL: INSTRUCCIONES DEL SIMULADOR -->
+    <div class="modal fade" id="modalInstrucciones" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-white"><i class="bi bi-terminal-fill text-info me-2"></i> Puesta en Marcha del Simulador (Flask)</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-light small">
+                        El simulador Security Workbench corre en un servidor local ligero de Python/Flask. Para iniciarlo en tu máquina, sigue cualquiera de estos dos métodos:
+                    </p>
+
+                    <h6 class="text-info fw-bold mt-3"><i class="bi bi-play-circle me-1"></i> Método 1: Script Automático (Recomendado)</h6>
+                    <pre class="terminal-box mb-3"><code>cd Laboratorio_XSS
+./iniciar_laboratorio.sh</code></pre>
+
+                    <h6 class="text-info fw-bold"><i class="bi bi-gear-fill me-1"></i> Método 2: Manual con Python</h6>
+                    <pre class="terminal-box mb-3"><code>cd Laboratorio_XSS
+pip install -r requirements.txt
+python3 app.py</code></pre>
+
+                    <h6 class="text-info fw-bold"><i class="bi bi-box-seam me-1"></i> Método 3: Con Docker Compose</h6>
+                    <pre class="terminal-box mb-3"><code>cd Laboratorio_XSS
+docker compose up -d</code></pre>
+
+                    <div class="alert alert-info py-2 px-3 small mb-0" style="background: rgba(25, 211, 197, 0.1); border-color: var(--turq); color: #DDE7F5;">
+                        <i class="bi bi-info-circle-fill text-info me-1"></i> Una vez iniciado, abre tu navegador en: 
+                        <a href="http://localhost:5000" target="_blank" class="fw-bold text-info">http://localhost:5000</a>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+                    <a href="http://localhost:5000" target="_blank" class="btn btn-primary btn-sm fw-bold" style="background:var(--turq); color:var(--navy); border:none;">
+                        Ir al Simulador en Port 5000 &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PIE DE PÁGINA -->
+    <footer class="text-center">
+        <div class="container px-4">
+            <div class="mb-2">
+                <span class="fw-bold text-light" style="font-family:'Space Grotesk'; font-size:1.1rem;">
+                    UNIVERSIDAD CATÓLICA DE EL SALVADOR (UNICAES)
+                </span>
+            </div>
+            <p class="mb-1 text-muted small">
+                Facultad de Ingeniería y Arquitectura &bull; Escuela de Ingeniería en Desarrollo de Software
+            </p>
+            <p class="mb-3 text-muted small">
+                Gestión de Seguridad en Sistemas Informáticos &bull; Evaluación Parcial 3 &bull; Ciclo II-2026
+            </p>
+            <div class="d-flex justify-content-center gap-3 small text-muted">
+                <span>Dennis Guevara (2023-GM-607)</span> &bull;
+                <span>Mario Villeda (2023-VA-651)</span> &bull;
+                <span>Luis Balcaceres (2023-BS-602)</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

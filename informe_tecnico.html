@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNICAES | Informe Técnico Pericial: Vulnerabilidad XSS (CWE-79)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --navy: #0B1B33;
+            --navy2: #12284A;
+            --navy3: #1C3A66;
+            --line: #25426E;
+            --turq: #19D3C5;
+            --turq2: #0FA89C;
+            --white: #ffffff;
+            --text: #DDE7F5;
+            --muted: #8FA3C2;
+            --red: #FF5C6C;
+            --amber: #FFB547;
+            --green: #2BD48A;
+            --bg-dark: #07101E;
+        }
+        * { box-sizing: border-box; }
+        body {
+            background-color: var(--navy);
+            color: var(--text);
+            font-family: 'Inter', system-ui, sans-serif;
+            line-height: 1.7;
+            margin: 0;
+            padding-top: 70px;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background-image:
+                linear-gradient(rgba(25,211,197,.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(25,211,197,.04) 1px, transparent 1px);
+            background-size: 36px 36px;
+        }
+        h1, h2, h3, h4 {
+            font-family: 'Space Grotesk', sans-serif;
+            color: #fff;
+            font-weight: 700;
+        }
+        code, .mono {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(25, 211, 197, 0.1);
+            color: var(--turq);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        pre {
+            background: #060d17;
+            border: 1px solid var(--line);
+            border-left: 3px solid var(--turq);
+            border-radius: 8px;
+            padding: 16px;
+            overflow-x: auto;
+        }
+        pre code {
+            background: transparent;
+            padding: 0;
+            color: #A3E635;
+        }
+        .navbar-custom {
+            background: rgba(11, 27, 51, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--line);
+        }
+        .report-card {
+            background: var(--navy2);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 28px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .table-custom {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            margin: 20px 0;
+        }
+        .table-custom th {
+            background: var(--navy3);
+            color: #fff;
+            padding: 12px 16px;
+            font-family: 'Space Grotesk', sans-serif;
+            border-bottom: 2px solid var(--turq);
+        }
+        .table-custom td {
+            background: rgba(18, 40, 74, 0.6);
+            color: var(--text);
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--line);
+        }
+        .table-custom tr:last-child td {
+            border-bottom: none;
+        }
+        .badge-academic {
+            background: rgba(25, 211, 197, 0.15);
+            color: var(--turq);
+            border: 1px solid var(--turq);
+            font-family: 'JetBrains Mono', monospace;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+        .toc-link {
+            display: block;
+            color: var(--muted);
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            border-left: 2px solid transparent;
+        }
+        .toc-link:hover, .toc-link.active {
+            color: var(--turq);
+            background: rgba(25, 211, 197, 0.08);
+            border-left-color: var(--turq);
+        }
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-turq {
+            background: var(--turq);
+            color: var(--navy);
+            border: 1px solid var(--turq);
+        }
+        .btn-turq:hover {
+            background: #20ebd9;
+            transform: translateY(-1px);
+            color: var(--navy);
+        }
+        .btn-outline-turq {
+            background: transparent;
+            color: var(--turq);
+            border: 1px solid var(--turq);
+        }
+        .btn-outline-turq:hover {
+            background: rgba(25, 211, 197, 0.15);
+            color: #fff;
+        }
+        @media print {
+            body { background: #fff !important; color: #000 !important; padding: 0; }
+            .navbar-custom, .sidebar-toc, .no-print { display: none !important; }
+            .report-card { border: none !important; box-shadow: none !important; padding: 0 !important; background: transparent !important; }
+            h1, h2, h3, h4 { color: #0B1B33 !important; }
+            .table-custom th { background: #E2E8F0 !important; color: #0B1B33 !important; }
+            .table-custom td { background: #fff !important; color: #000 !important; border-color: #CBD5E1 !important; }
+            code { background: #F1F5F9 !important; color: #0F172A !important; }
+            pre { background: #F8FAFC !important; border: 1px solid #CBD5E1 !important; }
+            pre code { color: #0F172A !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barra de Navegación Fija -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+                <i class="bi bi-shield-lock-fill text-info fs-4"></i>
+                <span style="font-family: 'Space Grotesk'; font-weight:700; letter-spacing: -0.5px;">UNICAES <span style="color:var(--turq)">| INFORME TÉCNICO</span></span>
+            </a>
+            <div class="d-flex align-items-center gap-2 ms-auto">
+                <a href="index.html" class="btn btn-sm btn-outline-turq">
+                    <i class="bi bi-house-door-fill"></i> Portal Principal
+                </a>
+                <a href="Informe_Tecnico_Vulnerabilidad_XSS_UNICAES.pdf" download class="btn btn-sm btn-turq">
+                    <i class="bi bi-file-earmark-pdf-fill"></i> Descargar PDF
+                </a>
+                <a href="Informe_Tecnico_Vulnerabilidad_XSS_UNICAES.docx" download class="btn btn-sm btn-outline-turq d-none d-md-inline-flex">
+                    <i class="bi bi-file-earmark-word-fill"></i> Word (.docx)
+                </a>
+                <button onclick="window.print()" class="btn btn-sm btn-outline-secondary text-light d-none d-lg-inline-flex">
+                    <i class="bi bi-printer"></i> Imprimir
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div class="row">
+            <!-- Sidebar / Índice Rápido -->
+            <div class="col-lg-3 d-none d-lg-block sidebar-toc">
+                <div class="position-sticky" style="top: 90px;">
+                    <div class="report-card p-3 mb-3">
+                        <div class="text-uppercase kicker mb-2 text-info fw-bold" style="font-size:0.75rem; letter-spacing: 1px;">Índice General</div>
+                        <nav class="d-flex flex-column gap-1">
+                            <a href="#portada" class="toc-link">1. Portada Institucional</a>
+                            <a href="#intro" class="toc-link">2. Introducción & Justificación</a>
+                            <a href="#objetivos" class="toc-link">3. Objetivos del Trabajo</a>
+                            <a href="#ficha" class="toc-link">4. Ficha Técnica CWE-79</a>
+                            <a href="#taxonomia" class="toc-link">5. Taxonomía de Ataque XSS</a>
+                            <a href="#poc" class="toc-link">6. Prueba de Concepto (PoC)</a>
+                            <a href="#cia" class="toc-link">7. Triada de Seguridad (CIA)</a>
+                            <a href="#defensa" class="toc-link">8. Estrategia de Blindaje</a>
+                            <a href="#conclusiones" class="toc-link">9. Conclusiones y Bibliografía</a>
+                        </nav>
+                        <hr style="border-color: var(--line);">
+                        <div class="p-2 rounded" style="background: rgba(25, 211, 197, 0.05); border: 1px dashed var(--line); font-size: 0.82rem;">
+                            <i class="bi bi-info-circle-fill text-info"></i> Evaluación Parcial 3<br>
+                            <span class="text-muted">Ciclo II-2026 • Santa Ana</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenido Principal del Informe -->
+            <div class="col-lg-9">
+                <!-- Portada Institucional -->
+                <section id="portada" class="report-card text-center" style="border-top: 4px solid var(--turq);">
+                    <div class="d-flex justify-content-center align-items-center gap-2 mb-3">
+                        <span class="badge-academic">UNIVERSIDAD CATÓLICA DE EL SALVADOR</span>
+                        <span class="badge-academic">PARCIAL 3</span>
+                    </div>
+                    <h5 class="text-muted text-uppercase mb-1" style="letter-spacing: 1.5px; font-size: 0.95rem;">Facultad de Ingeniería y Arquitectura</h5>
+                    <p class="text-info fw-bold mb-3" style="font-size: 1.05rem;">Gestión de Seguridad en Sistemas Informáticos — Sección “A”</p>
+
+                    <h1 class="display-6 fw-bold text-white my-3">INFORME TÉCNICO DE VULNERABILIDAD</h1>
+                    <h4 class="text-info mb-4" style="font-weight: 500;">Anatomía, Impacto y Defensa Integral de Cross-Site Scripting (XSS - CWE-79)</h4>
+
+                    <div class="row justify-content-center text-start my-4">
+                        <div class="col-md-10">
+                            <div class="p-3 rounded" style="background: rgba(11, 27, 51, 0.7); border: 1px solid var(--line);">
+                                <div class="fw-bold text-light mb-2"><i class="bi bi-people-fill text-info"></i> Integrantes de Investigación:</div>
+                                <ul class="list-unstyled mb-0" style="font-family: 'JetBrains Mono'; font-size: 0.9rem;">
+                                    <li class="py-1"><i class="bi bi-chevron-right text-info"></i> Guevara Martínez, Dennis Ademir &mdash; <span class="text-info">2023-GM-607</span></li>
+                                    <li class="py-1"><i class="bi bi-chevron-right text-info"></i> Villeda Alabi, Mario Edgardo &mdash; <span class="text-info">2023-VA-651</span></li>
+                                    <li class="py-1"><i class="bi bi-chevron-right text-info"></i> Balcaceres Silvestre, Luis Felipe &mdash; <span class="text-info">2023-BS-602</span></li>
+                                </ul>
+                                <div class="mt-3 text-muted small border-top pt-2" style="border-color: var(--line) !important;">
+                                    <i class="bi bi-geo-alt-fill text-danger"></i> Santa Ana, El Salvador &bull; Noviembre de 2026 &bull; Ciclo II-2026
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-center gap-3 mt-4">
+                        <a href="Informe_Tecnico_Vulnerabilidad_XSS_UNICAES.pdf" download class="btn-action btn-turq">
+                            <i class="bi bi-download"></i> Descargar Informe PDF
+                        </a>
+                        <a href="Informe_Tecnico_Vulnerabilidad_XSS_UNICAES.docx" download class="btn-action btn-outline-turq">
+                            <i class="bi bi-file-earmark-word"></i> Formato Word
+                        </a>
+                    </div>
+                </section>
+
+                <!-- 1. Introducción y Justificación -->
+                <section id="intro" class="report-card">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="badge-academic">SECCIÓN 1</span>
+                        <h2 class="h3 mb-0">1. Introducción y Justificación Técnica</h2>
+                    </div>
+                    <p>
+                        En el ecosistema del desarrollo web contemporáneo, la seguridad de las aplicaciones del lado del cliente representa uno de los mayores desafíos operacionales para las organizaciones. Entre las vulnerabilidades que aquejan a la capa de presentación, el <strong>Cross-Site Scripting (XSS)</strong>, catalogado por el consorcio MITRE bajo el identificador <code>CWE-79</code> (<em>"Neutralización inadecuada de entradas durante la generación de páginas web"</em>), ha mantenido una presencia ininterrumpida dentro de las principales categorías de riesgo de OWASP a lo largo de más de dos décadas.
+                    </p>
+                    <p>
+                        El principio fundamental detrás de una debilidad XSS consiste en la incapacidad del navegador web para distinguir si un fragmento de código JavaScript ejecutable proviene del desarrollador legítimo del sitio o si fue incrustado por un tercero a través de una entrada de datos no confiable. Una vez que el navegador interpreta el script en el contexto de seguridad del origen (<em>Same-Origin Policy</em>), el código malicioso adquiere acceso irrestricto a los recursos locales del usuario, permitiendo el secuestro de credenciales de sesión (<em>Session Hijacking</em>), la alteración visual del sitio (<em>Defacement</em>), el redireccionamiento a portales fraudulentos y la ejecución de operaciones no autorizadas en nombre de la víctima.
+                    </p>
+                    <p>
+                        El presente informe documenta la investigación, desarrollo experimental y verificación de mecanismos de defensa implementados para la evaluación del Parcial 3 de Gestión de Seguridad en Sistemas Informáticos en la Universidad Católica de El Salvador. A través de un laboratorio interactivo construido ad-hoc, se analizan los vectores de ataque más críticos y se formulan las estrategias de mitigación definitivas aplicadas en la industria del software.
+                    </p>
+                </section>
+
+                <!-- 2. Objetivos del Trabajo -->
+                <section id="objetivos" class="report-card">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="badge-academic">SECCIÓN 2</span>
+                        <h2 class="h3 mb-0">2. Objetivos del Trabajo</h2>
+                    </div>
+                    
+                    <h4 class="h5 text-info mt-3"><i class="bi bi-bullseye"></i> 2.1 Objetivo General</h4>
+                    <div class="p-3 rounded mb-4" style="background: rgba(25, 211, 197, 0.06); border-left: 3px solid var(--turq);">
+                        Analizar técnica y experimentalmente la vulnerabilidad Cross-Site Scripting (CWE-79) mediante la implementación de un laboratorio interactivo y reproducible, formulando las contramedidas de mitigación en profundidad requeridas para el desarrollo seguro de software institucional y empresarial.
+                    </div>
+
+                    <h4 class="h5 text-info mt-3"><i class="bi bi-list-check"></i> 2.2 Objetivos Específicos</h4>
+                    <ol class="ps-3 d-flex flex-column gap-2">
+                        <li><strong>Identificar y clasificar</strong> las variantes de XSS (Reflejado, Almacenado y Basado en DOM), describiendo su flujo de ejecución y superficies de ataque asociadas.</li>
+                        <li><strong>Desarrollar una prueba de concepto (PoC)</strong> en un entorno controlado que evidencie el impacto del secuestro de sesiones cuando las cookies de autenticación carecen de atributos de protección.</li>
+                        <li><strong>Implementar y validar contramedidas técnicas</strong> basadas en estándares internacionales, tales como la codificación de contexto (<em>Context-Aware Output Encoding</em>), la directiva de cabeceras HTTP <em>Content Security Policy (CSP Nivel 3)</em> y el atributo <code>HttpOnly</code>.</li>
+                    </ol>
+                </section>
+
+                <!-- 3. Ficha Técnica -->
+                <section id="ficha" class="report-card">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="badge-academic">SECCIÓN 3</span>
+                        <h2 class="h3 mb-0">3. Ficha Técnica de la Vulnerabilidad</h2>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table-custom">
+                            <thead>
+                                <tr>
+                                    <th style="width: 30%;">Parámetro</th>
+                                    <th>Detalle Técnico</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Identificador Estándar</strong></td>
+                                    <td><code>CWE-79</code>: <em>Improper Neutralization of Input During Web Page Generation</em></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Clasificación OWASP</strong></td>
+                                    <td><span class="badge bg-danger">A03:2021 - Injection</span> (Top 10 Web Application Security Risks)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Métrica CVSS v3.1</strong></td>
+                                    <td>
+                                        <code>CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N</code><br>
+                                        <span class="text-warning fw-bold">Base Score: 6.1 - 7.5 (Medio / Alto)</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Vector de Explotación</strong></td>
+                                    <td>Red / HTTP (Parámetros GET/POST, Cabeceras HTTP, Base de Datos, Fragmento URL DOM)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Requisito de Interacción</strong></td>
+                                    <td>Requiere interacción del usuario (<code>UI:R</code> - Clic en hipervínculo o navegación a página infectada)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Alcance de Seguridad</strong></td>
+                                    <td>Cambiado (<code>Scope: Changed</code> - Salta de la aplicación web al contexto del navegador cliente)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Impacto Principal</strong></td>
+                                    <td>Compromiso de Confidencialidad (Robo de tokens) e Integridad (Manipulación del DOM)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 4. Taxonomía -->
+                <section id="taxonomia" class="report-card">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="badge-academic">SECCIÓN 4</span>
+                        <h2 class="h3 mb-0">4. Taxonomía y Clasificación de XSS</h2>
+                    </div>
+
+                    <div class="row g-4 mt-1">
+                        <div class="col-md-4">
+                            <div class="h-100 p-3 rounded" style="background: rgba(11, 27, 51, 0.6); border: 1px solid var(--line);">
+                                <h4 class="h5 text-info"><i class="bi bi-arrow-repeat"></i> 4.1 XSS Reflejado (Tipo I)</h4>
+                                <span class="badge bg-secondary mb-2">No Persistente</span>
+                                <p class="small text-muted mb-0">
+                                    Ocurre cuando la aplicación web recibe datos en la petición HTTP (parámetros GET/POST o cabeceras) y los incluye inmediatamente en el HTML sin sanitización. Requiere que la víctima pulse un enlace fraudulento.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="h-100 p-3 rounded" style="background: rgba(11, 27, 51, 0.6); border: 1px solid var(--line);">
+                                <h4 class="h5 text-danger"><i class="bi bi-database-fill-down"></i> 4.2 XSS Almacenado (Tipo II)</h4>
+                                <span class="badge bg-danger mb-2">Persistente (Crítico)</span>
+                                <p class="small text-muted mb-0">
+                                    El script malicioso se aloja de forma permanente en la base de datos o almacenamiento del servidor. Se ejecuta automáticamente en cada usuario que visite la sección infectada sin requerir enlaces externos.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="h-100 p-3 rounded" style="background: rgba(11, 27, 51, 0.6); border: 1px solid var(--line);">
+                                <h4 class="h5 text-warning"><i class="bi bi-diagram-3-fill"></i> 4.3 XSS en DOM (Tipo 0)</h4>
+                                <span class="badge bg-warning text-dark mb-2">Client-Side XSS</span>
+                                <p class="small text-muted mb-0">
+                                    La vulnerabilidad reside en el código JavaScript del navegador, al tomar datos de una fuente manipulable (<code>location.hash</code>) y transferirlos directamente a un sumidero peligroso como <code>innerHTML</code>.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="text-white mt-4 mb-2">Ejemplo de Petición Vulnerable (XSS Reflejado):</h5>
+                    <pre><code>GET /buscar?q=&lt;script&gt;alert('XSS_Reflejado')&lt;/script&gt; HTTP/1.1
+Host: portal-academico.edu.sv
+
+&lt;!-- Respuesta vulnerable del servidor: --&gt;
+&lt;p&gt;Resultados para: &lt;script&gt;alert('XSS_Reflejado')&lt;/script&gt;&lt;/p&gt;</code></pre>
+                </section>
+
+                <!-- 5. PoC -->
+                <section id="poc" class="report-card">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="badge-academic">SECCIÓN 5</span>
+                        <h2 class="h3 mb-0">5. Prueba de Concepto (PoC) y Evidencia Experimental</h2>
+                    </div>
+                    <p>
+                        Para sustentar la investigación con evidencia práctica verificable, el equipo diseñó y programó un laboratorio interactivo en Python (Flask) con una interfaz gráfica basada en Bootstrap. Dicho entorno permite alternar en tiempo real entre un modo vulnerable y un modo mitigado mediante un interruptor en el panel de control.
+                    </p>
+
+                    <div class="p-3 mb-3 rounded" style="background: rgba(11, 27, 51, 0.5); border-left: 3px solid var(--turq);">
+                        <h5 class="text-white mb-2"><i class="bi bi-check2-circle text-info"></i> 5.1 Escenario 1: Demostración de Inyección Reflejada</h5>
+                        <p class="small mb-2">Se comprobó que la entrada directa del usuario en el parámetro GET <code>q</code> era renderizada sin escapar mediante un vector de imagen:</p>
+                        <pre class="mb-2"><code>&lt;img src=x onerror="alert('PoC_UNICAES: Ejecución de script vía evento onerror')"&gt;</code></pre>
+                        <p class="small text-muted mb-0"><strong>Mitigación:</strong> Con Modo Seguro activo, el servidor procesó el parámetro con <code>html.escape(consulta)</code>, neutralizando la ejecución al transformar delimitadores en entidades HTML literales.</p>
+                    </div>
+
+                    <div class="p-3 mb-3 rounded" style="background: rgba(11, 27, 51, 0.5); border-left: 3px solid var(--red);">
+                        <h5 class="text-white mb-2"><i class="bi bi-check2-circle text-danger"></i> 5.2 Escenario 2: Demostración de Persistencia en Comentarios</h5>
+                        <p class="small text-muted mb-0">Al persistir un comentario malicioso en memoria, este quedó disponible para cualquier sesión subsecuente, demostrando la capacidad de un atacante para infectar pasivamente a múltiples visitantes sin interacción directa.</p>
+                    </div>
+
+                    <div class="p-3 mb-3 rounded" style="background: rgba(11, 27, 51, 0.5); border-left: 3px solid var(--amber);">
+                        <h5 class="text-white mb-2"><i class="bi bi-check2-circle text-warning"></i> 5.3 Escenario 3: Manipulación de Flujo en el DOM</h5>
+                        <p class="small text-muted mb-0">Se contrastó la ejecución vulnerable provocada por <code>contenedor.innerHTML = hash</code> frente a la implementación segura con <code>contenedor.textContent = hash</code>, confirmando que esta última trata cualquier delimitador como texto puro.</p>
+                    </div>
+
+                    <div class="p-3 rounded" style="background: rgba(11, 27, 51, 0.5); border-left: 3px solid var(--green);">
+                        <h5 class="text-white mb-2"><i class="bi bi-check2-circle text-success"></i> 5.4 Escenario 4: Auditoría de Cookies y Mitigación HttpOnly</h5>
+                        <p class="small text-muted mb-0">Para evidenciar el riesgo de <em>Session Hijacking</em>, se configuró una cookie de prueba <code>session_auth_token</code>. En modo vulnerable, <code>document.cookie</code> expuso el token íntegro. Al marcar la bandera <code>httponly=True</code> en <code>Set-Cookie</code>, la API retornó una cadena vacía, protegiendo el secreto conforme a RFC 6265.</p>
+                    </div>
+                </section>
+
+                <!-- 6. Triada CIA -->
+                <section id="cia" class="report-card">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="badge-academic">SECCIÓN 6</span>
+                        <h2 class="h3 mb-0">6. Análisis de Impacto en la Triada de Seguridad (CIA)</h2>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table-custom">
+                            <thead>
+                                <tr>
+                                    <th style="width: 25%;">Pilar de Seguridad</th>
+                                    <th style="width: 25%;">Nivel de Compromiso</th>
+                                    <th>Manifestación del Ataque XSS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Confidencialidad</strong></td>
+                                    <td><span class="badge bg-danger">ALTO</span></td>
+                                    <td>Exfiltración de credenciales de sesión, tokens JWT, información personal ingresada en formularios y lectura de datos privados en el DOM.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Integridad</strong></td>
+                                    <td><span class="badge bg-danger">CRÍTICO</span></td>
+                                    <td>Desfiguración del portal (<em>Defacement</em>), alteración de transacciones financieras en curso, inserción de falsos campos de autenticación (<em>Phishing in-site</em>).</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Disponibilidad</strong></td>
+                                    <td><span class="badge bg-warning text-dark">MEDIO / BAJO</span></td>
+                                    <td>Generación de bucles infinitos en el hilo principal de JavaScript, bloqueo del navegador del usuario final y denegación de servicio local.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 7. Defensa en Profundidad -->
+                <section id="defensa" class="report-card">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="badge-academic">SECCIÓN 7</span>
+                        <h2 class="h3 mb-0">7. Estrategia Integral de Defensa en Profundidad</h2>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="p-3 rounded h-100" style="background: rgba(11, 27, 51, 0.7); border: 1px solid var(--line);">
+                                <h5 class="text-info"><i class="bi bi-shield-check"></i> 7.1 Codificación Contextual</h5>
+                                <p class="small text-muted mb-0">
+                                    Nunca insertar datos no confiables sin codificarlos según el contexto exacto (HTML Body, Atributos, Scripts, URLs). Los motores modernos aplican auto-escaping por defecto, el cual nunca debe anularse con <code>safe</code> o <code>dangerouslySetInnerHTML</code>.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 rounded h-100" style="background: rgba(11, 27, 51, 0.7); border: 1px solid var(--line);">
+                                <h5 class="text-info"><i class="bi bi-file-earmark-lock"></i> 7.2 Cabeceras CSP Nivel 3</h5>
+                                <p class="small text-muted mb-0">
+                                    La cabecera <code>Content-Security-Policy</code> restringe orígenes permitidos, inhabilitando la ejecución de scripts en línea (<code>'unsafe-inline'</code>) y la función <code>eval()</code>, neutralizando las cargas incluso si se inyectan en el HTML.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 rounded h-100" style="background: rgba(11, 27, 51, 0.7); border: 1px solid var(--line);">
+                                <h5 class="text-info"><i class="bi bi-key-fill"></i> 7.3 Endurecimiento de Cookies</h5>
+                                <p class="small text-muted mb-0">
+                                    Aplicación de la tríada obligatoria RFC 6265 en cookies de sesión: <code>HttpOnly</code> (inmune a JavaScript), <code>Secure</code> (tránsito exclusivo HTTPS) y <code>SameSite=Strict/Lax</code> (defensa contra CSRF).
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 rounded h-100" style="background: rgba(11, 27, 51, 0.7); border: 1px solid var(--line);">
+                                <h5 class="text-info"><i class="bi bi-funnel-fill"></i> 7.4 Sanitización de HTML Rico</h5>
+                                <p class="small text-muted mb-0">
+                                    En editores WYSIWYG o foros formateados, uso obligatorio de analizadores de árboles DOM probados como DOMPurify o Bleach para filtrar etiquetas y atributos peligrosos (<code>onload</code>, <code>onerror</code>).
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="text-white mt-4 mb-2">Directiva CSP Recomendada (Estricta):</h5>
+                    <pre><code>Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; object-src 'none'; base-uri 'self';</code></pre>
+                </section>
+
+                <!-- 8. Conclusiones y Bibliografía -->
+                <section id="conclusiones" class="report-card">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="badge-academic">SECCIÓN 8</span>
+                        <h2 class="h3 mb-0">8. Conclusiones y Referencias Bibliográficas</h2>
+                    </div>
+
+                    <h4 class="h5 text-info mt-2">Conclusiones del Estudio:</h4>
+                    <ul class="ps-3 d-flex flex-column gap-2 text-muted">
+                        <li>El Cross-Site Scripting (CWE-79) continúa siendo una amenaza de primer nivel debido a la continua expansión de aplicaciones web de página única (SPA) y la creciente delegación de lógica de negocio hacia el lado del cliente (navegador).</li>
+                        <li>La demostración experimental en el laboratorio desarrollado evidenció que un fallo en la validación o codificación de entradas permite a un atacante ejecutar código con los mismos privilegios del usuario autenticado, transformando el navegador en un vector de ataque activo contra la infraestructura institucional.</li>
+                        <li>La defensa ante XSS debe ser estructural: la codificación contextual de salida, el aprovisionamiento de cabeceras CSP robustas y el confinamiento de credenciales mediante <code>HttpOnly</code> conforman una tríada de salvaguardas que reduce drásticamente la superficie de ataque en los sistemas de información contemporáneos.</li>
+                    </ul>
+
+                    <h4 class="h5 text-info mt-4">Referencias Bibliográficas:</h4>
+                    <ul class="ps-3 small text-muted d-flex flex-column gap-1">
+                        <li><strong>OWASP Foundation.</strong> (2021). <em>OWASP Top 10:2021 - A03:2021-Injection</em>. cheatsheetseries.owasp.org</li>
+                        <li><strong>MITRE Corporation.</strong> (2024). <em>CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')</em>. Common Weakness Enumeration.</li>
+                        <li><strong>NIST.</strong> (2020). <em>Security and Privacy Controls for Information Systems and Organizations</em> (SP 800-53, Rev. 5). U.S. Department of Commerce.</li>
+                        <li><strong>W3C.</strong> (2023). <em>Content Security Policy Level 3</em>. W3C Working Draft.</li>
+                        <li><strong>Barth, A.</strong> (2011). <em>HTTP State Management Mechanism</em> (RFC 6265). IETF.</li>
+                    </ul>
+                </section>
+
+                <!-- Pie de Página del Informe -->
+                <footer class="text-center py-4 text-muted small border-top" style="border-color: var(--line) !important;">
+                    Universidad Católica de El Salvador (UNICAES) &bull; Facultad de Ingeniería y Arquitectura<br>
+                    Gestión de Seguridad en Sistemas Informáticos &bull; Parcial 3 &bull; Ciclo II-2026
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

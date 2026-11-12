@@ -6,11 +6,13 @@ Autores: Dennis Guevara, Mario Villeda, Luis Balcaceres
 Inspirado en la estética cyber-investigativa y didáctica de XSS Academy.
 """
 
-from flask import Flask, request, render_template, make_response, redirect, url_for, jsonify
+from flask import Flask, request, render_template, make_response, redirect, url_for, jsonify, send_from_directory
 import html
+import os
 import datetime
 
 app = Flask(__name__)
+PARENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 app.secret_key = "clave_secreta_laboratorio_seguridad_unicaes"
 
 # Registros de eventos interceptados por el servidor atacante simulado (C2)
@@ -43,8 +45,20 @@ configuracion = {
 
 # ----------------- ENDPOINTS DEL SERVIDOR FLASK -----------------
 
+
+# ----------------- PORTAL CENTRAL Y RECURSOS DEL ECOSISTEMA -----------------
+
 @app.route("/")
-def index():
+@app.route("/portal")
+def portal():
+    # Si el usuario solicita explícitamente el simulador mediante query param ?simulador=1
+    if request.args.get("simulador"):
+        return redirect("/simulador")
+    return send_from_directory(PARENT_DIR, "index.html")
+
+@app.route("/simulador")
+@app.route("/workbench")
+def simulador():
     resp = make_response(render_template("index.html", 
                                          configuracion=configuracion, 
                                          comentarios=comentarios_db, 
@@ -53,12 +67,39 @@ def index():
     aplicar_cabeceras_seguridad(resp)
     return resp
 
+@app.route("/ebook")
+@app.route("/ebook-interactivo")
+def ebook():
+    return send_from_directory(PARENT_DIR, "ebook_interactivo.html")
+
+@app.route("/revista")
+@app.route("/ebook-impreso")
+def revista():
+    return send_from_directory(PARENT_DIR, "ebook_revista_impresa.html")
+
+@app.route("/informe")
+@app.route("/informe-tecnico")
+def informe():
+    return send_from_directory(PARENT_DIR, "informe_tecnico.html")
+
+@app.route("/presentacion")
+def presentacion():
+    return send_from_directory(PARENT_DIR, "Presentacion_XSS_UNICAES.html")
+
+@app.route("/<path:filename>")
+def static_ecosistema(filename):
+    # Permite descargar o ver cualquier archivo estático del proyecto (PDF, DOCX, ZIP, HTML, etc.)
+    if os.path.exists(os.path.join(PARENT_DIR, filename)):
+        return send_from_directory(PARENT_DIR, filename)
+    return "Archivo no encontrado", 404
+
+
 @app.route("/toggle-modo")
 def toggle_modo():
     configuracion["modo_seguro"] = not configuracion["modo_seguro"]
     configuracion["csp_activo"] = configuracion["modo_seguro"]
     configuracion["httponly_activo"] = configuracion["modo_seguro"]
-    resp = redirect("/")
+    resp = redirect(request.referrer or "/simulador")
     resp.set_cookie("session_auth_token", "AUTH_TOKEN_UNICAES_SEC_987654321", 
                     httponly=configuracion["httponly_activo"], samesite="Lax")
     return resp

