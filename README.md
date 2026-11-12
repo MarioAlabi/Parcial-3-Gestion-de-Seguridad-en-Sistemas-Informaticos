@@ -20,17 +20,17 @@ Este repositorio contiene la entrega técnica integral correspondiente al Parcia
 
 ```
 ├── index.html                             # PORTAL CENTRAL (Homepage unificada del ecosistema)
-├── ebook_interactivo.html                 # Ebook Web interactivo multimedia (El caso ForoClase)
-├── ebook_revista_impresa.html             # Revista técnica editorial (20 páginas ilustradas)
-├── XSS_Academy_Edicion_Impresa.pdf        # Revista editorial maquetada en PDF (20 págs)
-├── informe_tecnico.html                   # Visor web del Informe Técnico Pericial
+├── ebook_interactivo.html                 # 2. Ebook Interactivo (Expediente web multimedia)
+├── revista_tecnica.html                   # 3. Revista Técnica (Edición editorial de 20 páginas)
+├── Revista_Tecnica_XSS_Academy.pdf        # PDF oficial de la Revista Técnica (20 páginas)
+├── informe_tecnico.html                   # 4. Informe Técnico (Visor web oficial UNICAES)
 ├── Informe_Tecnico_Vulnerabilidad_XSS_UNICAES.docx  # Informe técnico en formato Word
 ├── Informe_Tecnico_Vulnerabilidad_XSS_UNICAES.pdf   # Informe técnico en formato PDF oficial
 ├── Informe_Tecnico_Vulnerabilidad_XSS_UNICAES.md    # Informe técnico en formato Markdown
 ├── Presentacion_XSS_UNICAES.html          # Diapositivas web interactivas para exposición
 ├── Presentacion_XSS_UNICAES.pptx          # Presentación en formato PowerPoint
 ├── Guion_Presentacion_y_Defensa_XSS.md              # Guión y preguntas clave para la defensa
-├── Laboratorio_XSS/                       # Simulador interactivo en Python/Flask (Security Workbench)
+├── Laboratorio_XSS/                       # 1. Security Workbench (Simulador interactivo en Flask)
 │   ├── app.py                             # Servidor Flask con los 3 vectores y enrutador del portal
 │   ├── iniciar_laboratorio.sh             # Script de arranque automatizado
 │   ├── templates/index.html               # Interfaz del Workbench y Pipeline Debugger

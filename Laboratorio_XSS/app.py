@@ -75,7 +75,7 @@ def ebook():
 @app.route("/revista")
 @app.route("/ebook-impreso")
 def revista():
-    return send_from_directory(PARENT_DIR, "ebook_revista_impresa.html")
+    return send_from_directory(PARENT_DIR, "revista_tecnica.html")
 
 @app.route("/informe")
 @app.route("/informe-tecnico")
